@@ -18,6 +18,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
+## [1.5.5] - 2026-08-24
+
+### Fixed
+- **Crítico:** a divisão de um lançamento em múltiplas categorias não funcionava quando combinada com parcelamento — o sistema criava as parcelas normalmente, mas descartava silenciosamente a divisão por categoria, salvando tudo em uma única categoria (geralmente diferente da esperada). Como essa combinação não tem suporte real no momento, ela foi bloqueada: ativar parcelamento agora desliga automaticamente a divisão por categoria, com uma mensagem explicando o motivo
+- Texto "(total parcelado)" nas Últimas Transações do Dashboard não aparece mais em negrito
+
+### Changed
+- Título "Lançamentos" na tela de detalhe da meta agora usa a mesma fonte dos títulos de KPI do Dashboard
+- Valor já atingido em cada meta ganhou mais destaque visual
+- No card de cada cartão, a linha "Fecha dia / Vence dia" foi reposicionada para ficar logo abaixo do nome do cartão; o valor da fatura atual agora sempre aparece abaixo da data de vencimento, independentemente de haver alerta de pendência
+
 ## [1.5.4] - 2026-08-24
 
 ### Fixed
