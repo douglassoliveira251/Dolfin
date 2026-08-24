@@ -18,6 +18,23 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
+## [1.5.4] - 2026-08-24
+
+### Fixed
+- **Crítico:** ao editar um lançamento dividido em múltiplas categorias, o campo "Valor" principal continuava mostrando o valor de apenas uma das categorias (não o total do lançamento), fazendo a validação interna de soma falhar silenciosamente e impedindo qualquer alteração de ser salva. Corrigido para que, ao abrir um lançamento assim para edição, o valor total seja recalculado corretamente a partir da soma de todas as categorias
+
+### Added
+- Dashboard: no card "Últimas transações", cada linha agora mostra "Categoria › Subcategoria" com o ícone da subcategoria (ou da categoria, quando a subcategoria é "Outros")
+- Lista de Lançamentos: um ícone específico identifica lançamentos divididos em múltiplas categorias
+- Soma das categorias na divisão por categoria agora atualiza em tempo real conforme os valores são digitados, sem precisar adicionar uma nova linha
+- Metas: ao definir um valor já acumulado na criação de uma meta, um lançamento de saldo inicial é registrado automaticamente no histórico
+- Campo de descrição adicionado às metas, exibido no formulário de criação/edição e no detalhe da meta
+
+### Changed
+- Card de Cartões: alerta de pendência reposicionado para cima do valor da fatura atual
+- Metas: "Histórico desta meta" renomeado para "Lançamentos"; "Adicionar valor" renomeado para "Valor"
+- Botões de "Cancelar" em todo o sistema, e os botões da tela de exclusão de lançamento recorrente, agora têm borda cinza visível
+
 ## [1.5.3] - 2026-08-21
 
 ### Fixed
