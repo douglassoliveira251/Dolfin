@@ -18,16 +18,26 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
-## [1.5.6] - 2026-08-24
+## [1.5.6] - 2026-08-25
+
+### Added
+- **Divisão de lançamentos em múltiplas categorias**, com valores individuais por categoria, tudo dentro de um único registro (sem duplicar lançamentos)
+- Suporte à multicategoria combinada com parcelamento, respeitando o modo "Valor é Total" ou "Valor é Parcela"
+- Metas: ao definir um valor já acumulado na criação, um lançamento de saldo inicial é registrado automaticamente
+- Campo de descrição nas metas
 
 ### Fixed
-- **Crítico:** ativar parcelamento com a divisão por categoria já configurada calculava o valor da parcela incorretamente, gerando um erro de validação ao tentar salvar
-- **Crítico:** editar o valor de uma categoria em um lançamento parcelado não estava sendo salvo — a mudança aparecia na tela, mas era descartada ao clicar em Salvar
-- Ícone que identifica lançamentos com múltiplas categorias ajustado para o mesmo tamanho dos demais ícones da lista
+- **Crítico:** lançamentos excluídos podiam reaparecer ao atualizar a página logo em seguida, pois a exclusão não era salva no arquivo imediatamente. Agora toda exclusão é salva assim que confirmada
+- **Crítico:** editar um lançamento com multicategoria não carregava as categorias originais, mostrando apenas uma categoria diferente da selecionada
+- **Crítico:** ativar parcelamento com divisão por categoria já configurada calculava o valor errado, chegando a dobrar o total do lançamento
+- Ícone de "Multicategoria" ajustado para o mesmo tamanho dos demais ícones, tanto na lista de Lançamentos quanto no Dashboard, na fatura do cartão e nas Últimas Transações
+- Texto "(total parcelado)" nas Últimas Transações não fica mais em negrito
 
 ### Changed
-- No modo de divisão por categoria, o campo "Valor" passou a ser somente leitura, calculado automaticamente como a soma das categorias, evitando confusão sobre onde digitar o valor
-- A opção "Valor é Total/Parcela" foi ocultada quando a divisão por categoria está ativa, já que nesse modo cada categoria já representa o valor daquela parcela diretamente
+- Lista de Lançamentos, fatura do cartão e Últimas Transações mostram "Multicategoria" com um ícone genérico no lugar da categoria, quando o lançamento tem divisão
+- Gráficos e relatórios (Top Categorias, Orçamento, comparativo com mês anterior) contam corretamente cada parte de um lançamento multicategoria na sua respectiva categoria
+- Card de cada cartão: linha "Fecha dia / Vence dia" reposicionada para logo abaixo do nome; valor da fatura sempre abaixo da data de vencimento
+- Título "Lançamentos" na tela de detalhe da meta usa a mesma fonte dos títulos de KPI do Dashboard; valor já atingido com mais destaque visual
 
 ## [1.5.5] - 2026-08-24
 
