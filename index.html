@@ -107,7 +107,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 .btn.primary{background:var(--sidebar-accent);color:#fff;border-color:var(--sidebar-accent);}
 .btn.primary:hover{background:#0E5A55;border-color:#0E5A55;}
 .btn.gold{background:var(--gold);color:#fff;border-color:var(--gold);}
-.btn.ghost{background:transparent;border-color:transparent;color:var(--ink-soft);}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink-soft);}
 .btn.danger{color:var(--negative);border-color:var(--negative);background:#F5E0DC;}
 .btn.danger:hover{background:var(--negative);color:#fff;}
 .btn.danger-solid{color:#fff;border-color:var(--negative);background:var(--negative);}
@@ -609,6 +609,7 @@ const ICONS = {
   bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>',
   sync:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-15.5 6.3M3 12a9 9 0 0115.5-6.3"/><path d="M21 4v5h-5M3 20v-5h5"/></svg>',
   logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  splitCat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
   eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
   eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A9.4 9.4 0 0112 5c6.4 0 10 7 10 7a17.6 17.6 0 01-3.1 4.1M6.6 6.6C4 8.3 2 12 2 12s3.6 7 10 7c1.5 0 2.8-.4 4-1"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -718,7 +719,7 @@ function normalizeState(raw){
     data:l.data||new Date().toISOString().slice(0,10),
     hora:l.hora||"00:00",
     criadoEm: l.criadoEm || ((l.data||new Date().toISOString().slice(0,10)) + "T" + (l.hora||"00:00") + ":00.000Z"),
-    splitGroupId: l.splitGroupId || null,
+    categoriasSplits: Array.isArray(l.categoriasSplits) ? l.categoriasSplits.map(s=>({categoriaId:s.categoriaId||null, subcategoriaId:s.subcategoriaId||null, valor:Number(s.valor)||0})) : null,
     contaId:l.contaId||null,
     cartaoId:l.cartaoId||null,
     competenciaFatura: l.competenciaFatura || null,
@@ -782,6 +783,7 @@ function normalizeState(raw){
     id:m.id||uid("meta"), nome:m.nome||"Meta", valorAlvo:Number(m.valorAlvo)||0,
     valorAtual:Number(m.valorAtual)||0, dataAlvo:m.dataAlvo||null, cor:m.cor||"#2E5C8A",
     icone:m.icone||"target", concluida:m.concluida===true, criadoEm:m.criadoEm||new Date().toISOString(),
+    descricao: m.descricao || "",
     movimentos: Array.isArray(m.movimentos) ? m.movimentos.map(mv=>({
       id:mv.id||uid("metamov"), data:mv.data||new Date().toISOString().slice(0,10),
       valor:Number(mv.valor)||0, tipo:mv.tipo==="saida"?"saida":"entrada"
@@ -1571,6 +1573,12 @@ function contasVisiveis(){
 }
 function cartaoById(id){ return state.cartoes.find(c=>c.id===id); }
 function categoriaById(id){ return state.categorias.find(c=>c.id===id); }
+function partesCategoriaDoLancamento(l){
+  if(Array.isArray(l.categoriasSplits) && l.categoriasSplits.length>1){
+    return l.categoriasSplits.map(s=> ({categoriaId:s.categoriaId, subcategoriaId:s.subcategoriaId, valor:Number(s.valor)||0}));
+  }
+  return [{categoriaId:l.categoriasIds[0]||null, subcategoriaId:l.categoriasIds[1]||null, valor:l.valor}];
+}
 function tagById(id){ return state.tags.find(t=>t.id===id); }
 function ativoById(id){ return state.investimentos.ativos.find(a=>a.id===id); }
 
@@ -2403,14 +2411,16 @@ function renderDashboard(root){
   if(donutCategoriaAtiva && !catAtivaObj) donutCategoriaAtiva = null;
   const catTotais = {};
   lancMes.filter(l=>l.tipo==="despesa").forEach(l=>{
-    if(donutCategoriaAtiva){
-      if(l.categoriasIds[0]!==donutCategoriaAtiva) return;
-      const cid = l.categoriasIds[1] || "__sem__";
-      catTotais[cid] = (catTotais[cid]||0) + l.valor;
-    } else {
-      const cid = l.categoriasIds[0] || "__sem__";
-      catTotais[cid] = (catTotais[cid]||0) + l.valor;
-    }
+    partesCategoriaDoLancamento(l).forEach(parte=>{
+      if(donutCategoriaAtiva){
+        if(parte.categoriaId!==donutCategoriaAtiva) return;
+        const cid = parte.subcategoriaId || "__sem__";
+        catTotais[cid] = (catTotais[cid]||0) + parte.valor;
+      } else {
+        const cid = parte.categoriaId || "__sem__";
+        catTotais[cid] = (catTotais[cid]||0) + parte.valor;
+      }
+    });
   });
   const catTotaisOrdenados = Object.entries(catTotais).sort((a,b)=>b[1]-a[1]);
   const topCats = catTotaisOrdenados.slice(0,4);
@@ -2422,13 +2432,17 @@ function renderDashboard(root){
   const mesAnterior = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-1, 1);
   const catTotaisAtualComparativo = {};
   lancMes.filter(l=>l.tipo==="despesa").forEach(l=>{
-    const cid = l.categoriasIds[0] || "__sem__";
-    catTotaisAtualComparativo[cid] = (catTotaisAtualComparativo[cid]||0) + l.valor;
+    partesCategoriaDoLancamento(l).forEach(parte=>{
+      const cid = parte.categoriaId || "__sem__";
+      catTotaisAtualComparativo[cid] = (catTotaisAtualComparativo[cid]||0) + parte.valor;
+    });
   });
   const catTotaisAnterior = {};
   lancamentosDoMes(mesAnterior).filter(l=>l.tipo==="despesa").forEach(l=>{
-    const cid = l.categoriasIds[0] || "__sem__";
-    catTotaisAnterior[cid] = (catTotaisAnterior[cid]||0) + l.valor;
+    partesCategoriaDoLancamento(l).forEach(parte=>{
+      const cid = parte.categoriaId || "__sem__";
+      catTotaisAnterior[cid] = (catTotaisAnterior[cid]||0) + parte.valor;
+    });
   });
   const catIdsComparativo = new Set([...Object.keys(catTotaisAtualComparativo), ...Object.keys(catTotaisAnterior)]);
   const comparativoLinhasTodas = [...catIdsComparativo].map(cid=>{
@@ -2731,13 +2745,14 @@ function renderDashboard(root){
         return ultimasN.map(l=>{
           const cat = l.categoriasIds[0] ? categoriaById(l.categoriasIds[0]) : null;
           const subcat = l.categoriasIds[1] ? categoriaById(l.categoriasIds[1]) : null;
+          const isMultiCat = Array.isArray(l.categoriasSplits) && l.categoriasSplits.length>1;
           const nomeExibido = l._isParceladoAgrupado ? (l.nome||"").replace(/\s*\(\d+\/\d+\)\s*$/,"") : l.nome;
           return `<div class="dash-row" data-abre-transacao="${l.id}" style="padding:6px 4px;">
             <div class="dash-row-main">
-              ${cat ? catCircleHtml(cat) : `<span class="dash-icon-circle" style="background:var(--gray-100);color:var(--gray-400);">${ICONS.detail}</span>`}
+              ${isMultiCat ? `<span class="cat-circle" style="background:#4A473E;color:#fff;">${ICONS.splitCat}</span>` : (subcat ? catCircleHtmlSubcat(subcat) : (cat ? catCircleHtml(cat) : `<span class="cat-circle" style="background:var(--gray-100);color:var(--gray-400);">${ICONS.detail}</span>`))}
               <div style="min-width:0;">
-                <div class="dash-row-name" style="font-size:12.5px;">${nomeExibido}${l._isParceladoAgrupado?` <span class="mini-note" style="margin:0;">(total parcelado)</span>`:''}</div>
-                <div class="mini-note" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${subcat ? subcat.nome : (cat ? cat.nome : "Sem categoria")}</div>
+                <div class="dash-row-name" style="font-size:12.5px;">${nomeExibido}${l._isParceladoAgrupado?` <span class="mini-note" style="margin:0;font-weight:400;">(total parcelado)</span>`:''}</div>
+                <div class="mini-note" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${isMultiCat ? "Multicategoria" : (subcat&&cat ? `${cat.nome} › ${subcat.nome}` : (cat ? cat.nome : "Sem categoria"))}</div>
               </div>
             </div>
             <div class="dash-row-vals">
@@ -2960,9 +2975,9 @@ function renderLancamentos(root){
           return `<tr data-id="${l.id}" class="lanc-row ${cartaoLanc?(l.efetivado?'cartao-pago':'cartao-pendente'):''}" style="cursor:pointer;">
             <td onclick="event.stopPropagation()"><span class="efetivar-dot ${l.efetivado?'on':''} ${l.cartaoId?'disabled':''}" ${l.cartaoId?'title="Controlado pelo pagamento da fatura"':`data-efetivar="${l.id}" title="Marcar como efetivado"`}>${ICONS.check}</span></td>
             <td>${fmtDateHora(l)}</td>
-            <td>${l.nome||"—"}${l.recorrencia.ativa?` <span class="tt-icon" style="color:var(--gray-400);">${ICONS.repeat}</span>`:""}${cartaoLanc?` <span class="mini-note" style="display:inline;">(${cartaoLanc.nome})</span>`:""}${l.descricao?`<div class="mini-note">${l.descricao}</div>`:""}</td>
+            <td>${l.nome||"—"}${l.recorrencia.ativa?` <span class="tt-icon" style="color:var(--gray-400);width:15px;height:15px;">${ICONS.repeat}</span>`:""}${Array.isArray(l.categoriasSplits)&&l.categoriasSplits.length>1?` <span class="tt-icon" style="color:#4A473E;width:15px;height:15px;" title="Lançamento com múltiplas categorias">${ICONS.splitCat}</span>`:""}${cartaoLanc?` <span class="mini-note" style="display:inline;">(${cartaoLanc.nome})</span>`:""}${l.descricao?`<div class="mini-note">${l.descricao}</div>`:""}</td>
             ${!isTransf ? `
-            <td>${subcat?`${catCircleHtmlSubcat(subcat)}${catPai?catPai.nome:''} › ${subcat.nome}`:(catPai?catCircleHtml(catPai)+catPai.nome:"—")}</td>` : ""}
+            <td>${Array.isArray(l.categoriasSplits)&&l.categoriasSplits.length>1 ? `<span class="cat-circle" style="background:#4A473E;color:#fff;">${ICONS.splitCat}</span>Multicategoria` : (subcat?`${catCircleHtmlSubcat(subcat)}${catPai?catPai.nome:''} › ${subcat.nome}`:(catPai?catCircleHtml(catPai)+catPai.nome:"—"))}</td>` : ""}
             <td>${l.tipo==="transferencia" ? `<span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">${conta?entityCircleHtml(conta.cor,conta.icone):''}<span>${conta?conta.nome:"?"}</span><span class="tt-icon" style="display:inline-flex;color:var(--gray-400);">${ICONS.swap}</span>${destino?entityCircleHtml(destino.cor,destino.icone):''}<span>${destino?destino.nome:"?"}</span></span>` : contaCartaoCellHtml(l)}</td>
             <td style="text-align:right" class="${cor} valor-destaque">${sinal}${fmtMoney(l.valor)}</td>
             <td onclick="event.stopPropagation()" style="white-space:nowrap;">
@@ -3028,7 +3043,7 @@ async function excluirLancamentoComOpcoes(l){
     const ok = await openConfirmPortal("Deseja excluir este lançamento? Essa ação não pode ser desfeita.", {danger:true});
     if(!ok) return false;
     state.lancamentos = state.lancamentos.filter(x=>x.id!==l.id);
-    await persist();
+    await persist(true);
     return true;
   }
   const escolha = await new Promise(resolve=>{
@@ -3064,7 +3079,7 @@ async function excluirLancamentoComOpcoes(l){
   } else {
     state.lancamentos = state.lancamentos.filter(x=> x.recorrencia.grupoId!==l.recorrencia.grupoId);
   }
-  await persist();
+  await persist(true);
   return true;
 }
 
@@ -3160,6 +3175,10 @@ function openLancamentoModal(id, monthCtx, presetTipo){
   let opcoesAvancadasOpen = false;
   let multiCatMode = false;
   let multiCatSplits = [];
+  if(editing && base && Array.isArray(base.categoriasSplits) && base.categoriasSplits.length>1){
+    multiCatMode = true;
+    multiCatSplits = base.categoriasSplits.map(s=> ({categoriaId:s.categoriaId, subcategoriaId:s.subcategoriaId, valor:s.valor}));
+  }
   let recorrenciaReiniciada = false;
   let efetivadoTocadoManualmente = false;
   let tagSearch = "";
@@ -3187,6 +3206,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
   const contasParaTipo = ()=> form.tipo==="investimento" ? state.contas.filter(c=>c.tipo==="investimento") : state.contas;
 
   function draw(){
+    if(multiCatMode){ form.valor = multiCatSplits.reduce((s,x)=>s+(Number(x.valor)||0),0); }
     const catPaiAtual = form.categoriasIds[0] || null;
     const subcatAtual = form.categoriasIds[1] || null;
     const contasDisponiveis = contasParaTipo();
@@ -3217,10 +3237,10 @@ function openLancamentoModal(id, monthCtx, presetTipo){
               </div>
               <div id="nomeAutocomplete" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:60;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 24px rgba(23,34,25,.18);margin-top:4px;max-height:220px;overflow-y:auto;"></div>
             </label>
-            <label class="field" id="lblValor"><span style="display:flex;justify-content:space-between;align-items:baseline;width:100%;"><span>Valor <span class="req-star">*</span></span>${form.recorrencia.ativa && form.recorrencia.tipo==="parcelado" && form.recorrencia.valorTipo==="parcela" && form.recorrencia.totalParcelas>1 ? `<span class="mini-note" style="font-weight:600;">Total: ${fmtMoney((form.valor||0)*form.recorrencia.totalParcelas)}</span>` : ""}</span>
+            <label class="field" id="lblValor"><span style="display:flex;justify-content:space-between;align-items:baseline;width:100%;"><span>Valor <span class="req-star">*</span></span>${!multiCatMode && form.recorrencia.ativa && form.recorrencia.tipo==="parcelado" && form.recorrencia.valorTipo==="parcela" && form.recorrencia.totalParcelas>1 ? `<span class="mini-note" style="font-weight:600;">Total: ${fmtMoney((form.valor||0)*form.recorrencia.totalParcelas)}</span>` : (multiCatMode ? `<span class="mini-note" style="font-weight:600;">Soma das categorias</span>` : "")}</span>
               <div style="position:relative;display:flex;align-items:center;">
-                <input id="fValor" style="padding-right:34px;">
-                <button type="button" class="icon-btn" id="btnCalc" style="position:absolute;right:2px;color:var(--gray-400);" title="Calculadora">${ICONS.calc}</button>
+                <input id="fValor" style="padding-right:34px;" ${multiCatMode?'readonly':''}>
+                ${!multiCatMode ? `<button type="button" class="icon-btn" id="btnCalc" style="position:absolute;right:2px;color:var(--gray-400);" title="Calculadora">${ICONS.calc}</button>` : ""}
               </div>
             </label>
           </div>
@@ -3267,12 +3287,13 @@ function openLancamentoModal(id, monthCtx, presetTipo){
                     </select>
                   </div>
                 </label>
-                <label class="field" style="margin-bottom:10px;">Valor é
+                <label class="field" style="margin-bottom:4px;">Valor é
                   <div class="pill-select">
                     <button type="button" class="pill-opt sm ${form.recorrencia.valorTipo==='total'?'active':''}" data-valortipo="total">Total</button>
                     <button type="button" class="pill-opt sm ${form.recorrencia.valorTipo==='parcela'?'active':''}" data-valortipo="parcela">Parcela</button>
                   </div>
-                </label>` : ""}
+                </label>
+                ${multiCatMode ? `<p class="mini-note" style="margin:0 0 10px;">${form.recorrencia.valorTipo==='total' ? 'Cada categoria será dividida proporcionalmente entre as parcelas.' : 'O valor de cada categoria já é o valor por parcela.'}</p>` : ""}` : ""}
                 ${form.recorrencia.ativa && form.recorrencia.tipo==='fixo' ? `
                 <label class="field" style="margin-bottom:10px;">Data de término (opcional)
                   <input type="date" id="fDataTermino" value="${form.recorrencia.dataTermino||''}">
@@ -3329,10 +3350,11 @@ function openLancamentoModal(id, monthCtx, presetTipo){
           </div>`}
 
           ${form.tipo==="entrada" || form.tipo==="despesa" ? `
-          <label class="field" style="flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:16px;">
+          <label class="field" style="flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:${form.recorrencia.ativa && form.recorrencia.tipo!=="parcelado"?'2px':'16px'};">
             <span>Dividir em mais de uma categoria?</span>
-            <span class="switch ${multiCatMode?'on':''}" id="fMultiCatToggle"><span class="knob"></span></span>
-          </label>` : ""}
+            <span class="switch ${multiCatMode?'on':''} ${(form.recorrencia.ativa && form.recorrencia.tipo!=="parcelado")?'disabled':''}" id="fMultiCatToggle" style="${(form.recorrencia.ativa && form.recorrencia.tipo!=="parcelado")?'opacity:.4;pointer-events:none;':''}"><span class="knob"></span></span>
+          </label>
+          ${(form.recorrencia.ativa && form.recorrencia.tipo!=="parcelado") ? `<p class="mini-note" style="margin:0 0 16px;">Não disponível para lançamentos recorrentes fixos.</p>` : ""}` : ""}
           ${multiCatMode && (form.tipo==="entrada" || form.tipo==="despesa") ? `
           <div class="field" style="margin-bottom:14px;">
             <span>Categorias e valores <span class="req-star">*</span></span>
@@ -3394,7 +3416,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
 
     maskMoney(overlay.querySelector("#fValor"), form.valor);
     const fValorEl = overlay.querySelector("#fValor");
-    if(fValorEl && form.recorrencia.ativa && form.recorrencia.tipo==="parcelado" && form.recorrencia.valorTipo==="parcela"){
+    if(fValorEl && !multiCatMode && form.recorrencia.ativa && form.recorrencia.tipo==="parcelado" && form.recorrencia.valorTipo==="parcela"){
       fValorEl.addEventListener("input", ()=>{
         const totalLabelEl = overlay.querySelector("#lblValor .mini-note");
         if(totalLabelEl && form.recorrencia.totalParcelas>1){
@@ -3476,7 +3498,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
       const v = e.target.value;
       if(v==="nao_recorrente"){ form.recorrencia = {ativa:false, frequencia:"mensal", intervalo:1, tipo:"parcelado", valorTipo:"total", totalParcelas:2, parcelaInicial:1}; }
       else if(v==="parcelado"){ form.recorrencia.ativa = true; form.recorrencia.tipo = "parcelado"; recorrenciaReiniciada = true; }
-      else if(v==="fixo_mensal"){ form.recorrencia.ativa = true; form.recorrencia.tipo = "fixo"; form.recorrencia.frequencia = "mensal"; }
+      else if(v==="fixo_mensal"){ form.recorrencia.ativa = true; form.recorrencia.tipo = "fixo"; form.recorrencia.frequencia = "mensal"; multiCatMode = false; }
       draw();
     };
     const btnRepeatChip = overlay.querySelector("#btnRepeatChip");
@@ -3568,7 +3590,17 @@ function openLancamentoModal(id, monthCtx, presetTipo){
           draw();
         });
         const valEl = overlay.querySelector(`[data-multicat-valor="${i}"]`);
-        if(valEl) maskMoney(valEl, s.valor||0);
+        if(valEl){
+          maskMoney(valEl, s.valor||0);
+          valEl.addEventListener("input", ()=>{
+            let somaAtual = 0;
+            overlay.querySelectorAll("[data-multicat-valor]").forEach(el=> somaAtual += moneyVal(el));
+            const somaInfoEl = overlay.querySelector("#multiCatSomaInfo");
+            if(somaInfoEl) somaInfoEl.textContent = `Soma das categorias: ${fmtMoney(somaAtual)}`;
+            const fValorReadonly = overlay.querySelector("#fValor");
+            if(fValorReadonly){ fValorReadonly.value = fmtMoney(somaAtual); fValorReadonly.dataset.rawValue = somaAtual; }
+          });
+        }
       });
       overlay.querySelectorAll("[data-multicat-remove]").forEach(b=> b.onclick = ()=>{
         syncFromDom();
@@ -3584,9 +3616,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
       const somaInfoEl = overlay.querySelector("#multiCatSomaInfo");
       if(somaInfoEl){
         const somaSplits = multiCatSplits.reduce((s,x)=>s+(Number(x.valor)||0),0);
-        const diff = (form.valor||0) - somaSplits;
-        somaInfoEl.textContent = `Soma das categorias: ${fmtMoney(somaSplits)} de ${fmtMoney(form.valor||0)}${Math.abs(diff)>0.009?` (faltam ${fmtMoney(diff)})`:' ✓'}`;
-        somaInfoEl.style.color = Math.abs(diff)>0.009 ? 'var(--negative)' : 'var(--positive)';
+        somaInfoEl.textContent = `Soma das categorias: ${fmtMoney(somaSplits)}`;
       }
     }
     function onToggleTag(tagId){
@@ -3678,6 +3708,12 @@ function openLancamentoModal(id, monthCtx, presetTipo){
       };
     }
     overlay.querySelector("#btnSave").onclick = async ()=>{
+      if(multiCatMode){
+        overlay.querySelectorAll("[data-multicat-valor]").forEach(el=>{
+          const idx = Number(el.dataset.multicatValor);
+          if(multiCatSplits[idx]) multiCatSplits[idx].valor = moneyVal(el);
+        });
+      }
       form.valor = moneyVal(overlay.querySelector("#fValor"));
       form.data = overlay.querySelector("#fData").value || todayStr();
       form.hora = overlay.querySelector("#fHora").value || nowTimeStr();
@@ -3693,7 +3729,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
 
       if(!overlay.querySelector("#fNomeLanc").value.trim() && form.tipo!=="transferencia"){ erro("lblNome","Informe um nome para o lançamento."); return; }
       if(!overlay.querySelector("#fData").value){ erro("lblData","Informe a data."); return; }
-      if(!form.valor){ erro("lblValor","Informe um valor maior que zero."); return; }
+      if(!multiCatMode && !form.valor){ erro("lblValor","Informe um valor maior que zero."); return; }
 
       if(form.tipo==="transferencia"){
         form.contaId = overlay.querySelector("#fContaOrigem").value;
@@ -3713,15 +3749,10 @@ function openLancamentoModal(id, monthCtx, presetTipo){
         if(!form.cartaoId) form.competenciaFatura = null;
         form.contaDestinoId = null;
         if(multiCatMode){
-          overlay.querySelectorAll("[data-multicat-valor]").forEach(el=>{
-            const idx = Number(el.dataset.multicatValor);
-            if(multiCatSplits[idx]) multiCatSplits[idx].valor = moneyVal(el);
-          });
           if(multiCatSplits.length<2){ showToast("Selecione ao menos 2 categorias para dividir o lançamento."); return; }
           if(multiCatSplits.some(s=>!s.categoriaId)){ showToast("Selecione a categoria em todas as linhas."); return; }
           if(multiCatSplits.some(s=>!s.subcategoriaId)){ showToast("Selecione a subcategoria em todas as linhas."); return; }
-          const somaSplits = multiCatSplits.reduce((s,x)=>s+(Number(x.valor)||0),0);
-          if(Math.abs(somaSplits - form.valor) > 0.009){ showToast(`A soma das categorias (${fmtMoney(somaSplits)}) precisa ser igual ao valor total (${fmtMoney(form.valor)}).`); return; }
+          if(multiCatSplits.every(s=>!s.valor)){ showToast("Informe o valor de pelo menos uma categoria."); return; }
         } else {
           if(!form.categoriasIds[0]){ erro("lblCategoria","Selecione a categoria."); return; }
           if(!form.categoriasIds[1]){ erro("lblSubcategoria","Selecione a subcategoria."); return; }
@@ -3732,6 +3763,18 @@ function openLancamentoModal(id, monthCtx, presetTipo){
         form.recorrencia.totalParcelas = Number(fTotalParcelasEl.value)||2;
       }
 
+      if(multiCatMode){
+        overlay.querySelectorAll("[data-multicat-valor]").forEach(el=>{
+          const idx = Number(el.dataset.multicatValor);
+          if(multiCatSplits[idx]) multiCatSplits[idx].valor = moneyVal(el);
+        });
+        form.categoriasSplits = multiCatSplits.map(s=> ({categoriaId:s.categoriaId, subcategoriaId:s.subcategoriaId, valor:Number(s.valor)||0}));
+        form.categoriasIds = [];
+        form.valor = form.categoriasSplits.reduce((s,x)=>s+(Number(x.valor)||0),0);
+      } else {
+        form.categoriasSplits = null;
+      }
+
       // Aplica cálculo de parcelamento apenas na criação, ou quando a recorrência acaba de ser ativada
       // (nunca reprocessa um lançamento que já foi parcelado em uma edição anterior)
       const prevRecAntes = editing ? state.lancamentos.find(l=>l.id===id).recorrencia.ativa : false;
@@ -3740,7 +3783,12 @@ function openLancamentoModal(id, monthCtx, presetTipo){
       if(deveProcessarParcelamento){
         const total = form.recorrencia.totalParcelas||2;
         const inicial = form.recorrencia.parcelaInicial||1;
-        if(form.recorrencia.valorTipo==="total"){ form.valor = form.valor/total; }
+        if(form.recorrencia.valorTipo==="total"){
+          form.valor = form.valor/total;
+          if(Array.isArray(form.categoriasSplits) && form.categoriasSplits.length){
+            form.categoriasSplits = form.categoriasSplits.map(s=> ({...s, valor: (Number(s.valor)||0)/total}));
+          }
+        }
         form.recorrencia.parcelaAtual = inicial;
         const nomeBaseSemSufixo = (form.nome||"").replace(/\s*\(\d+\/\d+\)\s*$/,"");
         form.nome = `${nomeBaseSemSufixo} (${inicial}/${total})`;
@@ -3827,25 +3875,10 @@ function openLancamentoModal(id, monthCtx, presetTipo){
       } else {
         form.id = uid("lanc");
         if(form.recorrencia.ativa) form.recorrencia.grupoId = uid("rec");
-        if(multiCatMode && !form.recorrencia.ativa){
-          const splitGroupId = uid("split");
-          const nomeBase = form.nome;
-          multiCatSplits.forEach((s, i)=>{
-            const item = Object.assign({}, form, {
-              id: i===0 ? form.id : uid("lanc"),
-              valor: Number(s.valor)||0,
-              categoriasIds: [s.categoriaId, s.subcategoriaId],
-              splitGroupId,
-              nome: nomeBase,
-            });
-            state.lancamentos.push(item);
-          });
-        } else {
-          state.lancamentos.push(form);
-          if(form.recorrencia.ativa){
-            const novos = gerarOcorrenciasRecorrencia(form, horizonteGeracao);
-            state.lancamentos.push(...novos);
-          }
+        state.lancamentos.push(form);
+        if(form.recorrencia.ativa){
+          const novos = gerarOcorrenciasRecorrencia(form, horizonteGeracao);
+          state.lancamentos.push(...novos);
         }
       }
       if(form.tipo!=="transferencia" && form.categoriasIds[0]){
@@ -4123,6 +4156,7 @@ function renderCartoes(root){
     </div>
     <div class="kpi-grid">
       ${state.cartoes.map(c=>{
+        const venc = faturaPrecisaPagar(c);
         const mesRefAtualKey = competenciaAberta(c);
         const [refY, refM] = mesRefAtualKey.split("-").map(Number);
         const mesRefAtual = new Date(refY, refM-1, 1);
@@ -4132,19 +4166,22 @@ function renderCartoes(root){
         return `
         <div class="card ${c.padrao?'ribbon-padrao':''}" style="cursor:pointer;" data-extrato-cartao="${c.id}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-            <div style="display:flex;align-items:center;min-width:0;"><span class="cat-circle" style="background:${c.cor};color:${contrastIconColor(c.cor)};flex:none;">${CATEGORY_ICON_SVGS[c.icone]||CATEGORY_ICON_SVGS.card}</span><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nome}</strong></div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;"><span class="cat-circle" style="background:${c.cor};color:${contrastIconColor(c.cor)};flex:none;">${CATEGORY_ICON_SVGS[c.icone]||CATEGORY_ICON_SVGS.card}</span><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nome}</strong></div>
+              <div class="mini-note" style="margin-top:4px;">Fecha dia ${c.diaFechamento} · Vence dia ${c.diaVencimento}</div>
+              <div class="mini-note">Limite: ${fmtMoney(c.limite)}</div>
+            </div>
             <div style="display:flex;align-items:flex-start;gap:8px;flex:none;">
               <div style="text-align:right;line-height:1.4;">
-                <div class="val" style="font-size:16px;margin-top:0;">${fmtMoney(totalFaturaAtual)}</div>
+                ${venc ? `<div><span class="badge-status previsto" style="white-space:nowrap;display:inline-block;margin-bottom:4px;">Pagar até ${fmtDate(venc.toISOString().slice(0,10))}</span></div>` : ""}
                 <div class="mini-note" style="margin:0;">Vence em ${fmtDate(mesVencAtualCartao.toISOString().slice(0,10))}</div>
+                <div class="val" style="font-size:16px;margin-top:0;">${fmtMoney(totalFaturaAtual)}</div>
               </div>
               <div style="position:relative;" onclick="event.stopPropagation()">
                 <button class="icon-btn kebab-btn" data-kebab-cartao="${c.id}">${ICONS.kebab}</button>
               </div>
             </div>
           </div>
-          <div class="mini-note" style="margin-top:8px;">Fecha dia ${c.diaFechamento} · Vence dia ${c.diaVencimento}</div>
-          <div class="mini-note">Limite: ${fmtMoney(c.limite)}</div>
         </div>`;
       }).join("") || emptyState("Nenhum cartão cadastrado.")}
     </div>
@@ -4260,7 +4297,7 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
               return `<tr class="${l.efetivado?'cartao-pago':'cartao-pendente'} lanc-row" data-id="${l.id}" style="cursor:pointer;">
                 <td>${fmtDateHora(l)}</td>
                 <td>${l.nome||"—"}</td>
-                <td>${subcat?`${catCircleHtmlSubcat(subcat)}${catPai?catPai.nome:''} › ${subcat.nome}`:(catPai?catCircleHtml(catPai)+catPai.nome:"—")}</td>
+                <td>${Array.isArray(l.categoriasSplits)&&l.categoriasSplits.length>1 ? `<span class="cat-circle" style="background:#4A473E;color:#fff;">${ICONS.splitCat}</span>Multicategoria` : (subcat?`${catCircleHtmlSubcat(subcat)}${catPai?catPai.nome:''} › ${subcat.nome}`:(catPai?catCircleHtml(catPai)+catPai.nome:"—"))}</td>
                 <td style="text-align:right;" class="${l.tipo==='despesa'?'neg':'pos'}">${fmtMoney(l.valor)}</td>
               </tr>`;
             }).join("")
@@ -4304,7 +4341,7 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
       if(gruposPagamento.size){
         state.lancamentos = state.lancamentos.filter(l=> !(l.origemPagamentoGrupo && gruposPagamento.has(l.origemPagamentoGrupo)));
       }
-      await persist(); renderView(); draw(); showToast("Fatura reaberta e pagamento desfeito.");
+      await persist(true); renderView(); draw(); showToast("Fatura reaberta e pagamento desfeito.");
     };
     overlay.addEventListener("click", e=>{ if(e.target===overlay) overlay.remove(); });
   }
@@ -4706,8 +4743,9 @@ function realizadoOrcamento(o, monthDate, apenasComConta){
     return state.investimentos.aportes.filter(a=> a.tipo==="aporte" && isInMonth(a.data, monthDate) && a.categoriaId && idsRelevantes.includes(a.categoriaId) && (!apenasComConta || a.contaId))
       .reduce((s,a)=>s+a.valor,0);
   }
-  return lancamentosDoMes(monthDate).filter(l=> l.tipo===cat.tipo && l.categoriasIds.some(id=>idsRelevantes.includes(id)))
-    .reduce((s,l)=>s+l.valor,0);
+  return lancamentosDoMes(monthDate).filter(l=> l.tipo===cat.tipo).reduce((s,l)=>{
+    return s + partesCategoriaDoLancamento(l).filter(parte=> idsRelevantes.includes(parte.categoriaId)).reduce((s2,parte)=>s2+parte.valor,0);
+  }, 0);
 }
 
 let orcTabTipo = "entrada";
@@ -5117,9 +5155,10 @@ function openMetaDetalheModal(metaId){
           </div>
         </div>
         <div class="portal-body">
+          ${meta.descricao ? `<p class="mini-note" style="margin:-4px 0 14px;">${meta.descricao}</p>` : ""}
           <div class="progress-mini" style="margin-bottom:8px;height:10px;"><div style="width:${pct}%;background:${concluida?'var(--positive)':meta.cor};"></div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <span class="mini-note" style="margin:0;">${fmtMoney(meta.valorAtual)} de ${fmtMoney(meta.valorAlvo)}</span>
+            <span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--ink);">${fmtMoney(meta.valorAtual)}</span><span class="mini-note" style="margin:0;"> de ${fmtMoney(meta.valorAlvo)}</span>
             <span style="font-weight:700;font-family:var(--font-display);font-size:18px;">${pctReal.toFixed(0)}%</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
@@ -5127,7 +5166,7 @@ function openMetaDetalheModal(metaId){
             <span class="switch ${concluida?'on':''}" id="fMetaConcluida"><span class="knob"></span></span>
           </div>
           <div class="field-row" style="grid-template-columns:2.4fr 0.9fr auto;align-items:flex-end;gap:12px;margin-bottom:16px;">
-            <label class="field" id="lblValorMeta" style="margin-bottom:0;"><span>Adicionar valor</span>
+            <label class="field" id="lblValorMeta" style="margin-bottom:0;"><span>Valor</span>
               <div style="display:flex;align-items:center;gap:10px;">
                 <input id="fValorMovMeta" style="flex:1;min-width:0;">
                 <div class="mov-tipo-toggle">
@@ -5139,7 +5178,7 @@ function openMetaDetalheModal(metaId){
             <label class="field" style="margin-bottom:0;">Data <input type="date" id="fDataMovMeta" value="${todayStr()}"></label>
             <button type="button" class="btn primary small" id="btnAddMov" style="justify-content:center;white-space:nowrap;">Adicionar</button>
           </div>
-          <h4 style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);">Histórico desta meta</h4>
+          <h4 style="margin:0 0 8px;font-size:12.5px;text-transform:none;letter-spacing:normal;color:var(--gray-700);font-weight:600;">Lançamentos</h4>
           <div class="table-scroll" style="max-height:220px;overflow-y:auto;">
           <table>
             <thead><tr><th>Data</th><th>Tipo</th><th style="text-align:right">Valor</th><th></th></tr></thead>
@@ -5197,7 +5236,7 @@ function openMetaDetalheModal(metaId){
 }
 function openMetaModal(id){
   const editing = !!id;
-  const base = editing ? state.metas.find(m=>m.id===id) : {id:null, nome:"", valorAlvo:0, valorAtual:0, dataAlvo:null, cor:COLOR_PRESETS[Math.floor(Math.random()*COLOR_PRESETS.length)], icone:"target", concluida:false};
+  const base = editing ? state.metas.find(m=>m.id===id) : {id:null, nome:"", valorAlvo:0, valorAtual:0, dataAlvo:null, cor:COLOR_PRESETS[Math.floor(Math.random()*COLOR_PRESETS.length)], icone:"target", concluida:false, descricao:""};
   const overlay = document.createElement("div");
   overlay.className = "portal-overlay";
   overlay.innerHTML = `
@@ -5218,6 +5257,7 @@ function openMetaModal(id){
           <label class="field">Valor alvo <input id="fValorAlvo"></label>
           <label class="field">Data alvo (opcional) <input type="date" id="fDataAlvo" value="${base.dataAlvo||''}"></label>
         </div>
+        <label class="field">Descrição (opcional) <textarea id="fDescricaoMeta" rows="2" placeholder="Descreva o objetivo desta meta...">${base.descricao||''}</textarea></label>
         ${!editing ? `<label class="field">Valor já acumulado (opcional) <input id="fValorAtual"></label>` : `
         <div class="toggle-row">
           <div class="ti"><h4>Meta alcançada</h4><p>Marca esta meta como concluída, independente do valor acumulado.</p></div>
@@ -5254,11 +5294,13 @@ function openMetaModal(id){
     const dataAlvo = overlay.querySelector("#fDataAlvo").value || null;
     const cor = overlay.querySelector("#fCor").value;
     const icone = overlay.querySelector("#fIcone").value;
+    const descricao = overlay.querySelector("#fDescricaoMeta").value.trim();
     if(editing){
-      Object.assign(base, {nome, valorAlvo, dataAlvo, cor, icone, concluida:concluidaState});
+      Object.assign(base, {nome, valorAlvo, dataAlvo, cor, icone, concluida:concluidaState, descricao});
     } else {
       const valorAtual = valorAtualEl ? moneyVal(valorAtualEl) : 0;
-      state.metas.push({ id:uid("meta"), nome, valorAlvo, valorAtual, dataAlvo, cor, icone, concluida:false, criadoEm:new Date().toISOString(), movimentos:[] });
+      const movimentos = valorAtual>0 ? [{id:uid("metamov"), data:todayStr(), valor:valorAtual, tipo:"entrada"}] : [];
+      state.metas.push({ id:uid("meta"), nome, valorAlvo, valorAtual, dataAlvo, cor, icone, concluida:false, criadoEm:new Date().toISOString(), descricao, movimentos });
     }
     await persist(); overlay.remove(); renderView(); showToast("Meta salva.");
   };
@@ -5466,7 +5508,7 @@ function openAtivoExtratoModal(ativoId){
       } else {
         state.investimentos.atualizacoes = state.investimentos.atualizacoes.filter(x=>x.id!==b.dataset.delEntry);
       }
-      await persist(); draw(); renderView();
+      await persist(true); draw(); renderView();
     });
     overlay.addEventListener("click", e=>{ if(e.target===overlay) overlay.remove(); });
   }
@@ -5736,7 +5778,7 @@ function openSobreModal(){
       <div class="portal-body">
         <p style="margin-bottom:10px;"><strong>Dolfin</strong> — Controle Financeiro Pessoal</p>
         <p class="mini-note" style="margin-bottom:10px;">Aplicativo único (HTML/CSS/JS), sem servidor, com dados salvos diretamente no seu computador via File System Access API. Parte da família de ferramentas TYVRA.</p>
-        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.5.3</p>
+        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.5.6</p>
         <p class="mini-note">Navegador recomendado: Chrome ou Edge.</p>
       </div>
       <div class="portal-foot"><div></div><button class="btn ghost" id="btnFecharSobre">Fechar</button></div>
