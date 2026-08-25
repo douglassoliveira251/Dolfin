@@ -18,6 +18,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
+## [1.5.6] - 2026-08-24
+
+### Fixed
+- **Crítico:** ativar parcelamento com a divisão por categoria já configurada calculava o valor da parcela incorretamente, gerando um erro de validação ao tentar salvar
+- **Crítico:** editar o valor de uma categoria em um lançamento parcelado não estava sendo salvo — a mudança aparecia na tela, mas era descartada ao clicar em Salvar
+- Ícone que identifica lançamentos com múltiplas categorias ajustado para o mesmo tamanho dos demais ícones da lista
+
+### Changed
+- No modo de divisão por categoria, o campo "Valor" passou a ser somente leitura, calculado automaticamente como a soma das categorias, evitando confusão sobre onde digitar o valor
+- A opção "Valor é Total/Parcela" foi ocultada quando a divisão por categoria está ativa, já que nesse modo cada categoria já representa o valor daquela parcela diretamente
+
 ## [1.5.5] - 2026-08-24
 
 ### Fixed
