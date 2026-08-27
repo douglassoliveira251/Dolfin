@@ -387,6 +387,11 @@ label.field.field-error input,label.field.field-error select,label.field.field-e
 .tabs-card .tab-btn svg{width:15px;height:15px;}
 .tabs-card .tab-btn.active{background:var(--surface-2);}
 .tabs-card .tab-btn.active::after{content:"";position:absolute;left:14px;right:14px;bottom:2px;height:2px;border-radius:2px;background:currentColor;}
+.tabs-card-sm{display:flex;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;margin-bottom:12px;}
+.tabs-card-sm .tab-btn{padding:5px 10px;border-radius:6px;border-bottom:none;display:flex;align-items:center;gap:5px;position:relative;font-size:12px;}
+.tabs-card-sm .tab-btn svg{width:12px;height:12px;}
+.tabs-card-sm .tab-btn.active{background:var(--surface-2);}
+.tabs-card-sm .tab-btn.active::after{content:"";position:absolute;left:10px;right:10px;bottom:1px;height:2px;border-radius:2px;background:currentColor;}
 .tab-btn{padding:9px 16px;border:none;background:transparent;font-weight:600;color:var(--gray-400);border-bottom:2px solid transparent;font-size:13px;}
 .tab-btn.active{color:var(--text-heading);border-color:var(--primary);}
 .tab-btn.tab-despesa.active{color:var(--negative);border-color:var(--type-despesa);}
@@ -402,6 +407,13 @@ label.field.field-error input,label.field.field-error select,label.field.field-e
 .pill-tipo-btn.transferencia.active{background:var(--gold);border-color:var(--gold);color:#fff;}
 .pill-tipo-btn.investimento.active{background:var(--type-investimento);border-color:var(--type-investimento);color:#fff;}
 .pill-tipo-btn.active-neutral{background:#DFF0E4;border-color:#DFF0E4;color:var(--positive);}
+.pill-tipo-btn-sm{padding:8px 14px;border-radius:999px;border:1.5px solid var(--gray-100);background:var(--bg);color:var(--ink-soft);font-weight:600;font-size:11.5px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px;}
+.pill-tipo-btn-sm svg{width:12px;height:12px;}
+.pill-tipo-btn-sm:hover{border-color:var(--gray-400);}
+.pill-tipo-btn-sm.entrada.active{background:var(--type-entrada);border-color:var(--type-entrada);color:#fff;}
+.pill-tipo-btn-sm.despesa.active{background:var(--negative);border-color:var(--negative);color:#fff;}
+.pill-tipo-btn-sm.investimento.active{background:var(--type-investimento);border-color:var(--type-investimento);color:#fff;}
+.pill-tipo-btn-sm.active-neutral{background:#DFF0E4;border-color:#DFF0E4;color:var(--positive);}
 
 .progress-mini{height:6px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
 .progress-mini > div{height:100%;background:var(--primary-2);}
@@ -415,7 +427,7 @@ label.field.field-error input,label.field.field-error select,label.field.field-e
 .custom-select{position:relative;}
 .custom-select-trigger{
   width:100%;text-align:left;border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;
-  background:var(--surface);display:flex;align-items:center;gap:8px;cursor:pointer;
+  background:var(--surface);display:flex;align-items:center;gap:8px;cursor:pointer;min-height:40px;box-sizing:border-box;
 }
 .custom-select-trigger:hover{border-color:var(--gray-400);}
 .tags-input-trigger{
@@ -548,18 +560,15 @@ label.field.field-error input,label.field.field-error select,label.field.field-e
     </div>
   </div>
   <div class="main">
-    <div class="topbar">
-      <div style="min-width:0;">
-        <div class="topbar-title" id="viewTitleTop">Resumo</div>
-        <div class="topbar-sub" id="viewSubTop">Visão geral da sua vida financeira</div>
-      </div>
-      <div class="month-switch">
+    <div class="topbar" style="position:relative;">
+      <div style="min-width:0;"></div>
+      <div class="month-switch" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">
         <button id="btnPrevMonth" title="Mês anterior">‹</button>
         <div class="month-label" id="monthLabel" style="cursor:pointer;" title="Clique para voltar para hoje">—</div>
         <button id="btnNextMonth" title="Próximo mês">›</button>
       </div>
       <div style="display:flex;align-items:center;gap:14px;flex:none;">
-        <div class="search-box" id="buscaGlobalBox" style="display:flex;align-items:center;gap:6px;width:340px;padding:6px 8px;position:relative;background:var(--surface);">
+        <div class="search-box" id="buscaGlobalBox" style="display:flex;align-items:center;gap:6px;width:280px;padding:6px 8px;position:relative;background:var(--surface);">
           <span class="tt-icon" id="buscaGlobalSearchIcon" style="color:var(--gray-400);flex:none;width:13px;height:13px;"></span>
           <input type="text" id="fBuscaGlobal" placeholder="Buscar em tudo..." autocomplete="off" style="border:none;background:transparent;padding:3px 0;width:100%;outline:none;font-size:12.5px;">
           <div id="buscaGlobalResultados" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:340px;max-height:420px;overflow-y:auto;background:var(--surface);border-radius:var(--radius-sm);box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:60;padding:8px;"></div>
@@ -687,6 +696,7 @@ function normalizeState(raw){
   })) : [];
   out.cartoes = Array.isArray(s.cartoes) ? s.cartoes.map(c=>({
     id:c.id||uid("cartao"), nome:c.nome||"Cartão", contaVinculada:c.contaVinculada||null,
+    bandeira:c.bandeira||"outros", ultimosDigitos:c.ultimosDigitos||"",
     diaFechamento:Number(c.diaFechamento)||25, diaVencimento:Number(c.diaVencimento)||5,
     limite:Number(c.limite)||0, cor:c.cor||"#B8863A", icone:c.icone||"card", padrao:c.padrao===true, ativo:c.ativo!==false
   })) : [];
@@ -963,7 +973,7 @@ function categoriasSeedPadrao(){
 async function createNew(){
   try{
     const handle = await window.showSaveFilePicker({
-      suggestedName:"dolfin.json",
+      suggestedName:"dbase.json",
       types:[{description:"Dolfin JSON", accept:{"application/json":[".json"]}}]
     });
     if(!(await verifyPermission(handle, true))){
@@ -1191,14 +1201,24 @@ function isInMonthCompetencia(l, monthDate){
   return mesCompetencia(l) === monthKey(monthDate);
 }
 let valoresOcultos = false;
+function round2(v){
+  const n = Number(v)||0;
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+function ehNegativo(v){
+  const n = round2(v);
+  return n < 0;
+}
 function fmtMoney(v){
   if(valoresOcultos) return "R$ ••••••";
-  const n = Number(v)||0;
+  let n = round2(v);
+  if(Object.is(n, -0)) n = 0;
   return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 }
 function fmtMoneyIn(v, moeda){
   if(valoresOcultos) return "••••••";
-  const n = Number(v)||0;
+  let n = round2(v);
+  if(Object.is(n, -0)) n = 0;
   try{ return n.toLocaleString("pt-BR",{style:"currency",currency:moeda||"BRL"}); }
   catch(e){ return fmtMoney(n); }
 }
@@ -1359,6 +1379,9 @@ const CATEGORY_ICON_SVGS = {
   cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2A2 2 0 009.3 17H18a2 2 0 002-1.6L21.5 8H6"/><circle cx="10" cy="20.5" r="1.3"/><circle cx="17.5" cy="20.5" r="1.3"/></svg>',
   fuel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V6a2 2 0 012-2h5a2 2 0 012 2v15"/><path d="M5 13h9M14 9l3 2v6a1.5 1.5 0 003 0v-4l-2.5-2.5"/><path d="M4 21h11"/></svg>',
   card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 9.5h19"/><path d="M6 14h5"/></svg>',
+  bandeiraMastercard:'<svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6.5" fill="#EB001B"/><circle cx="15" cy="12" r="6.5" fill="#F79E1B" fill-opacity="0.9"/></svg>',
+  bandeiraVisa:'<svg viewBox="0 0 24 24"><rect x="1" y="6" width="22" height="12" rx="2" fill="#1A1F71"/><text x="12" y="15.5" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Arial,sans-serif" fill="#fff" font-style="italic">VISA</text></svg>',
+  bandeiraOutros:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 9.5h19"/></svg>',
   tax:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h9l3 3v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
   tools:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5a4 4 0 01-5.4 5.4L4 17l3 3 5.1-5.1a4 4 0 015.4-5.4l-2.5 2.5-2-2z"/></svg>',
   books:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5c2-1 5-1 7 0v15c-2-1-5-1-7 0z"/><path d="M20 4.5c-2-1-5-1-7 0v15c2-1 5-1 7 0z"/></svg>',
@@ -1616,7 +1639,7 @@ function saldoContaAte(contaId, dateStrInclusive, onlyEfetivados){
     if(dateStrInclusive && a.data > dateStrInclusive) return;
     total += a.tipo==="resgate" ? a.valor : -a.valor;
   });
-  return total;
+  return round2(total);
 }
 function mesImpactoConta(l){
   if(!l.cartaoId) return l.data ? l.data.slice(0,7) : null;
@@ -1643,11 +1666,11 @@ function saldoPrevistoConta(contaId, monthDate){
     if(!a.data || a.data.slice(0,7) > mesKeyAlvo) return;
     previstosNoMes += a.tipo==="resgate" ? a.valor : -a.valor;
   });
-  return atual + previstosNoMes;
+  return round2(atual + previstosNoMes);
 }
 
 function saldoTotalAte(dateStrInclusive, onlyEfetivados){
-  return state.contas.filter(c=>c.ativo).reduce((sum,c)=> sum + saldoContaAte(c.id, dateStrInclusive, onlyEfetivados), 0);
+  return round2(state.contas.filter(c=>c.ativo).reduce((sum,c)=> sum + saldoContaAte(c.id, dateStrInclusive, onlyEfetivados), 0));
 }
 
 function primeiroDiaMes(monthDate){ return monthKey(monthDate)+"-01"; }
@@ -1815,9 +1838,6 @@ function renderNav(){
 
 function renderMonthLabel(){
   document.getElementById("monthLabel").textContent = fmtMonthLabel(currentMonth);
-  const v = VIEWS.find(v=>v.id===currentView);
-  document.getElementById("viewTitleTop").textContent = v ? v.label : "Configurações";
-  document.getElementById("viewSubTop").textContent = v ? (v.sub||"") : "Preferências e comportamento do Dolfin";
 }
 
 document.getElementById("btnPrevMonth").addEventListener("click", ()=>{
@@ -1937,6 +1957,7 @@ let donutSelecionado = null;
 let donutCategoriaAtiva = null;
 let dashOrcTab = "entrada";
 let dashTransacoesTab = "todas";
+let fluxoCaixaPeriodo = "30D";
 function openFaturasPendentesModal(faturas){
   const overlay = document.createElement("div");
   overlay.className = "portal-overlay";
@@ -2302,7 +2323,7 @@ function buscaGlobal(termo){
   const q = termo.trim().toLowerCase();
   if(!q) return null;
   const lancs = state.lancamentos.filter(l=> (l.nome||"").toLowerCase().includes(q)).slice(0,8);
-  const categorias = state.categorias.filter(c=> c.nome!=="Aportes (orçamento)" && c.nome.toLowerCase().includes(q)).slice(0,6);
+  const categorias = state.categorias.filter(c=> c.nome!=="Aportes" && c.nome!=="Aportes (orçamento)" && c.nome.toLowerCase().includes(q)).slice(0,6);
   const contas = state.contas.filter(c=> c.nome.toLowerCase().includes(q)).slice(0,6);
   const cartoes = state.cartoes.filter(c=> c.nome.toLowerCase().includes(q)).slice(0,6);
   const tags = state.tags.filter(t=> t.nome.toLowerCase().includes(q)).slice(0,6);
@@ -2368,6 +2389,85 @@ function sparklineSvg(valores, w, h, cor){
     </linearGradient></defs>
     <path d="${areaPath}" fill="url(#${gradId})" stroke="none"/>
     <path d="${path}" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function fluxoCaixaChartSvg(dias, w, h){
+  const padL = 46, padR = 8, padT = 12, padB = 22;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  const allVals = dias.flatMap(d=>[d.entradas, d.saidas, d.saldo]);
+  let min = Math.min(0, ...allVals), max = Math.max(0, ...allVals);
+  if(min===max){ min-=100; max+=100; }
+  const range = (max-min) || 1;
+  const n = dias.length;
+  const stepX = n>1 ? plotW/(n-1) : 0;
+  const yFor = (v)=> padT + plotH - ((v-min)/range)*plotH;
+  const xFor = (i)=> padL + i*stepX;
+  const smoothPathFor = (key)=>{
+    const pts = dias.map((d,i)=> [xFor(i), yFor(d[key])]);
+    if(pts.length<2) return "";
+    let path = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for(let i=0;i<pts.length-1;i++){
+      const [x0,y0] = pts[i], [x1,y1] = pts[i+1];
+      const cx = (x0+x1)/2;
+      path += ` C${cx.toFixed(1)},${y0.toFixed(1)} ${cx.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
+    }
+    return path;
+  };
+  const marcaCada = Math.max(1, Math.ceil(n/6));
+  const dotsFor = (key, cor)=> dias.map((d,i)=> (i%marcaCada===0 || i===n-1) ? `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(d[key]).toFixed(1)}" r="2.5" fill="var(--surface)" stroke="${cor}" stroke-width="1.8"/>` : "").join("");
+  const gridLines = [max, 0, min].filter((v,i,a)=>a.indexOf(v)===i).map(v=>{
+    const y = yFor(v);
+    return `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${w-padR}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1" stroke-dasharray="${v===0?'3,3':'0'}" opacity="${v===0?'0.8':'0.4'}"/>
+      <text x="${padL-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--gray-400)">${fmtMoneyShort(v)}</text>`;
+  }).join("");
+  const passoLabel = Math.max(1, Math.ceil(n/6));
+  const xLabels = dias.map((d,i)=>{
+    if(i%passoLabel!==0 && i!==n-1) return "";
+    return `<text x="${xFor(i).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="9.5" fill="var(--gray-400)">${d.label}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" style="overflow:visible;">
+    ${gridLines}
+    <path d="${smoothPathFor('entradas')}" fill="none" stroke="var(--type-entrada)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${smoothPathFor('saidas')}" fill="none" stroke="var(--type-despesa)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${smoothPathFor('saldo')}" fill="none" stroke="var(--type-investimento)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dotsFor('entradas','var(--type-entrada)')}
+    ${dotsFor('saidas','var(--type-despesa)')}
+    ${dotsFor('saldo','var(--type-investimento)')}
+    ${xLabels}
+  </svg>`;
+}
+function fmtMoneyShort(v){
+  const abs = Math.abs(v);
+  if(abs>=1000) return (v<0?'-':'')+'R$ '+(abs/1000).toFixed(abs%1000===0?0:1).replace('.',',')+'k';
+  return 'R$ '+v.toFixed(0);
+}
+function historicoConsumoChartSvg(meses, w, h, cor){
+  cor = cor || "var(--type-despesa)";
+  const padL = 46, padR = 8, padT = 10, padB = 20;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  const vals = meses.map(m=>m.valor);
+  let min = 0, max = Math.max(...vals, 1);
+  const range = (max-min) || 1;
+  const n = meses.length;
+  const stepX = n>1 ? plotW/(n-1) : 0;
+  const yFor = (v)=> padT + plotH - ((v-min)/range)*plotH;
+  const xFor = (i)=> padL + i*stepX;
+  const pts = meses.map((m,i)=> [xFor(i), yFor(m.valor)]);
+  let path = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
+  for(let i=0;i<pts.length-1;i++){
+    const [x0,y0] = pts[i], [x1,y1] = pts[i+1];
+    const cx = (x0+x1)/2;
+    path += ` C${cx.toFixed(1)},${y0.toFixed(1)} ${cx.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
+  }
+  const dots = meses.map((m,i)=> `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(m.valor).toFixed(1)}" r="2.5" fill="var(--surface)" stroke="${cor}" stroke-width="1.8"/>`).join("");
+  const gridLine = `<line x1="${padL}" y1="${yFor(max).toFixed(1)}" x2="${w-padR}" y2="${yFor(max).toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>
+    <text x="${padL-6}" y="${(yFor(max)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--gray-400)">${fmtMoneyShort(max)}</text>`;
+  const xLabels = meses.map((m,i)=> `<text x="${xFor(i).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="9" fill="var(--gray-400)">${m.label}</text>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" style="overflow:visible;">
+    ${gridLine}
+    <path d="${path}" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+    ${xLabels}
   </svg>`;
 }
 function kpiCardHtml({label, value, valueColor, subNote, iconKey, iconBg, iconColor, extra, dataAttrs, clickable, compact}){
@@ -2457,8 +2557,10 @@ function renderDashboard(root){
   const totalAtualComp = despesas + despesasPrevisto;
   const totalAnteriorComp = Object.values(catTotaisAnterior).reduce((s,v)=>s+v,0);
 
+  const perfilNome = (state.perfil && state.perfil.nome) ? state.perfil.nome.split(" ")[0] : "";
   root.innerHTML = `
 
+    ${perfilNome ? `<p style="font-family:var(--font-display);font-size:26px;margin:0 0 28px;letter-spacing:.2px;"><strong style="color:var(--ink);font-weight:600;">Bem-vindo,</strong> <span style="color:var(--gray-400);font-weight:400;">${perfilNome}</span></p>` : ""}
     <div class="kpi-grid cols4" style="margin-bottom:16px;">
       ${kpiCardHtml({label:"Saldo inicial", value:fmtMoney(saldoInicial), iconKey:"kpiWallet", iconBg:"#DCE7F1", iconColor:"var(--type-investimento)", compact:true})}
       <div class="kpi-card compact" style="position:relative;">
@@ -2468,18 +2570,18 @@ function renderDashboard(root){
             <span class="tt-icon" style="width:14px;height:14px;">${ICONS.kpiPulse}</span>
           </span>
         </div>
-        <div class="val" style="color:${saldoAtual<0?'var(--negative)':'var(--positive)'};margin-top:2px;line-height:1.1;">${fmtMoney(saldoAtual)}</div>
+        <div class="val" style="color:${ehNegativo(saldoAtual)?'var(--negative)':'var(--positive)'};margin-top:2px;line-height:1.1;">${fmtMoney(saldoAtual)}</div>
         <div style="display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:${variacaoSaldoPct>=0?'var(--positive)':'var(--negative)'};white-space:nowrap;margin-top:6px;">
           <span>${variacaoSaldoPct>=0?'▲':'▼'} ${Math.abs(variacaoSaldoPct).toFixed(1)}%</span>
           <span class="mini-note" style="margin:0;font-weight:400;">vs mês ant.</span>
         </div>
         <div style="position:absolute;right:16px;bottom:14px;">${sparklineSvg(saldoHistorico, 44, 18, saldoAtual<0?'#AD4B34':'#2E7D5B')}</div>
       </div>
-      ${kpiCardHtml({label:`Saldo previsto <span class="tt-icon" style="width:11px;height:11px;color:var(--gray-400);vertical-align:-1px;">${ICONS.info}</span>`, value:fmtMoney(saldoPrevisto), valueColor: saldoPrevisto<0?'var(--negative)':'var(--ink)', iconKey:"kpiWallet", iconBg:"#F5E0DC", iconColor:"var(--negative)", dataAttrs:'id="nodeSaldoPrevisto"', clickable:true, compact:true})}
+      ${kpiCardHtml({label:`Saldo previsto <span class="tt-icon" style="width:11px;height:11px;color:var(--gray-400);vertical-align:-1px;">${ICONS.info}</span>`, value:fmtMoney(saldoPrevisto), valueColor: ehNegativo(saldoPrevisto)?'var(--negative)':'var(--ink)', iconKey:"kpiWallet", iconBg:"#F5E0DC", iconColor:"var(--negative)", dataAttrs:'id="nodeSaldoPrevisto"', clickable:true, compact:true})}
       ${(()=>{
         const resultadoMes = receitas - despesas;
         const pctReceita = receitas>0 ? (resultadoMes/receitas*100) : 0;
-        return kpiCardHtml({label:"Resultado do mês", value:fmtMoney(resultadoMes), valueColor:resultadoMes<0?'var(--negative)':'var(--positive)', subNote:`${pctReceita>=0?'▲':'▼'} ${Math.abs(pctReceita).toFixed(1)}% da receita`, iconKey:"kpiCoin", iconBg:"#EDE3F5", iconColor:"var(--type-investimento)", compact:true});
+        return kpiCardHtml({label:"Resultado do mês", value:fmtMoney(resultadoMes), valueColor:ehNegativo(resultadoMes)?'var(--negative)':'var(--positive)', subNote:`${pctReceita>=0?'▲':'▼'} ${Math.abs(pctReceita).toFixed(1)}% da receita`, iconKey:"kpiCoin", iconBg:"#EDE3F5", iconColor:"var(--type-investimento)", compact:true});
       })()}
     </div>
     <div class="kpi-grid cols5">
@@ -2506,7 +2608,7 @@ function renderDashboard(root){
               <span class="dash-row-name">${c.nome}</span>
             </div>
             <div class="dash-row-vals">
-              <div class="dash-row-atual ${atual<0?'neg':''}" style="font-size:19px;">${fmtMoneyIn(atual, c.moeda)}</div>
+              <div class="dash-row-atual ${ehNegativo(atual)?'neg':''}" style="font-size:19px;">${fmtMoneyIn(atual, c.moeda)}</div>
               <div class="dash-row-previsto">Previsto: ${fmtMoneyIn(previsto, c.moeda)}</div>
             </div>
             <span class="tt-icon" style="color:var(--gray-400);width:16px;height:16px;flex:none;">${ICONS.chevronRight||'›'}</span>
@@ -2641,10 +2743,10 @@ function renderDashboard(root){
     <div class="grid2" style="grid-template-columns:1.2fr 0.8fr;">
     <div class="card">
         <h3>Orçamento do mês</h3>
-        <div class="tabs" style="margin-bottom:12px;">
-          <button type="button" class="tab-btn tab-entrada ${dashOrcTab==='entrada'?'active':''}" data-dash-orc-tab="entrada">Entrada</button>
-          <button type="button" class="tab-btn tab-despesa ${dashOrcTab==='despesa'?'active':''}" data-dash-orc-tab="despesa">Despesa</button>
-          <button type="button" class="tab-btn tab-investimento ${dashOrcTab==='investimento'?'active':''}" data-dash-orc-tab="investimento">Investimento</button>
+        <div class="pill-select" style="margin-bottom:18px;">
+          <button type="button" class="pill-tipo-btn-sm entrada ${dashOrcTab==='entrada'?'active':''}" data-dash-orc-tab="entrada"><span class="tt-icon">${ICONS.kpiArrowDown}</span>Entrada</button>
+          <button type="button" class="pill-tipo-btn-sm despesa ${dashOrcTab==='despesa'?'active':''}" data-dash-orc-tab="despesa"><span class="tt-icon">${ICONS.kpiArrowUp}</span>Despesa</button>
+          <button type="button" class="pill-tipo-btn-sm investimento ${dashOrcTab==='investimento'?'active':''}" data-dash-orc-tab="investimento"><span class="tt-icon">${ICONS.kpiChart}</span>Investimento</button>
         </div>
         ${(()=>{
           const mesKeyDash = monthKey(currentMonth);
@@ -2667,7 +2769,7 @@ function renderDashboard(root){
             const pct = Math.min(100, pctReal);
             const over = realizado > valorPlanejadoMes;
             const destacarNegativo = over && dashOrcTab!=="entrada";
-            const corBarraCat = dashOrcTab!=="entrada" ? (pctReal>=95 ? "var(--negative)" : pctReal>=70 ? "var(--gold)" : "#173E37") : (cat?cat.cor:'var(--type-entrada)');
+            const corBarraCat = dashOrcTab==="entrada" ? "var(--type-entrada)" : dashOrcTab==="investimento" ? "var(--type-investimento)" : "var(--type-despesa)";
             return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12.5px;">
               <span style="display:flex;align-items:center;flex:none;width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${cat?'cursor:pointer;':''}" ${cat?`data-orc-cat-extrato="${cat.id}"`:''}>${cat?catCircleHtml(cat):''}${cat?cat.nome:'—'}</span>
               <div style="flex:1;display:flex;align-items:center;gap:6px;">
@@ -2679,9 +2781,9 @@ function renderDashboard(root){
           }).join("");
           const totalPctReal = totalPlanejado>0 ? (totalRealizado/totalPlanejado*100) : 0;
           const totalPct = Math.min(100, totalPctReal);
-          const corProgressoTotal = dashOrcTab!=="entrada" ? (totalPctReal>=95 ? 'var(--negative)' : totalPctReal>=70 ? 'var(--gold)' : '#173E37') : 'var(--type-entrada)';
+          const corProgressoTotal = dashOrcTab==='entrada' ? 'var(--type-entrada)' : dashOrcTab==='investimento' ? 'var(--type-investimento)' : 'var(--type-despesa)';
           const totalRow = `<div style="display:flex;align-items:center;gap:10px;margin-top:6px;padding-top:10px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;">
-            <span style="flex:none;">Total ${dashOrcTab==='entrada'?'entradas':'despesas'}</span>
+            <span style="flex:none;">Total ${dashOrcTab==='entrada'?'entradas':dashOrcTab==='investimento'?'investimentos':'despesas'}</span>
             <div style="flex:1;display:flex;align-items:center;gap:6px;">
               <div class="progress-mini" style="flex:1;"><div style="width:${totalPct}%;background:${corProgressoTotal};"></div></div>
               <span style="flex:none;font-size:14px;font-weight:400;">${totalPctReal.toFixed(0)}%</span>
@@ -2710,15 +2812,16 @@ function renderDashboard(root){
     </div>
     </div>
 
-    <div class="card" style="margin-top:20px;">
+    <div class="grid2" style="grid-template-columns:0.8fr 1.2fr;margin-top:20px;">
+    <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <h3 style="margin:0;">Últimas transações</h3>
         <button class="btn ghost small" id="btnVerTodasTransacoes" style="color:var(--sidebar-accent);">Ver todas</button>
       </div>
-      <div class="pill-tipo" style="margin-bottom:8px;">
-        <button type="button" class="pill-tipo-btn ${dashTransacoesTab==='todas'?'active-neutral':''}" data-transacoes-tab="todas">Todas</button>
-        <button type="button" class="pill-tipo-btn entrada ${dashTransacoesTab==='entrada'?'active':''}" data-transacoes-tab="entrada">Entradas</button>
-        <button type="button" class="pill-tipo-btn despesa ${dashTransacoesTab==='saida'?'active':''}" data-transacoes-tab="saida">Despesas</button>
+      <div class="pill-select" style="margin-bottom:18px;">
+        <button type="button" class="pill-tipo-btn-sm ${dashTransacoesTab==='todas'?'active-neutral':''}" data-transacoes-tab="todas"><span class="tt-icon">${ICONS.dashboard}</span>Todas</button>
+        <button type="button" class="pill-tipo-btn-sm entrada ${dashTransacoesTab==='entrada'?'active':''}" data-transacoes-tab="entrada"><span class="tt-icon">${ICONS.kpiArrowDown}</span>Entradas</button>
+        <button type="button" class="pill-tipo-btn-sm despesa ${dashTransacoesTab==='saida'?'active':''}" data-transacoes-tab="saida"><span class="tt-icon">${ICONS.kpiArrowUp}</span>Despesas</button>
       </div>
       ${(()=>{
         const todosLancsRaw = state.lancamentos.filter(l=> l.tipo==="entrada" || l.tipo==="despesa");
@@ -2763,10 +2866,56 @@ function renderDashboard(root){
           </div>`;
         }).join("");
       })()}
-      <button class="btn ghost" id="btnVerTodasTransacoesRodape" style="width:100%;justify-content:center;margin-top:12px;">Ver todas as transações</button>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div>
+          <h3 style="margin:0;line-height:1.15;">Fluxo de caixa</h3>
+          <p class="mini-note" style="margin:4px 0 20px;line-height:1.2;">Evolução das transações</p>
+        </div>
+        <div class="pill-select" style="flex:none;">
+          ${["7D","30D","3M","6M","12M"].map(p=>`<button type="button" class="pill-tipo-btn-sm ${fluxoCaixaPeriodo===p?'active-neutral':''}" data-fluxo-periodo="${p}">${p}</button>`).join("")}
+        </div>
+      </div>
+      ${(()=>{
+        const ultimoDiaNum = Number(ultimoDiaMes(currentMonth).slice(8,10));
+        const diasMap = {"7D":7, "30D":ultimoDiaNum, "3M":90, "6M":180, "12M":365};
+        const qtdDias = diasMap[fluxoCaixaPeriodo] || 30;
+        const fimRef = fluxoCaixaPeriodo==="30D" ? new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0) : new Date();
+        const inicioRef = new Date(fimRef); inicioRef.setDate(inicioRef.getDate()-(qtdDias-1));
+        const agruparPorSemana = fluxoCaixaPeriodo!=="7D";
+        const baldeSize = agruparPorSemana ? 7 : 1;
+        const pontos = [];
+        let saldoAcum = 0;
+        for(let start=0; start<qtdDias; start+=baldeSize){
+          const dIni = new Date(inicioRef); dIni.setDate(dIni.getDate()+start);
+          const dFim = new Date(dIni); dFim.setDate(dFim.getDate()+Math.min(baldeSize, qtdDias-start)-1);
+          const dIniStr = dIni.toISOString().slice(0,10), dFimStr = dFim.toISOString().slice(0,10);
+          const lancsBalde = state.lancamentos.filter(l=>{
+            const dStr = l.efetivado?(l.dataEfetivacao||l.data).slice(0,10):l.data;
+            return dStr>=dIniStr && dStr<=dFimStr;
+          });
+          const entradas = lancsBalde.filter(l=>l.tipo==="entrada").reduce((s,l)=>s+l.valor,0);
+          const saidas = lancsBalde.filter(l=>l.tipo==="despesa").reduce((s,l)=>s+l.valor,0);
+          saldoAcum += entradas - saidas;
+          const label = agruparPorSemana
+            ? String(dIni.getDate()).padStart(2,"0")+"/"+String(dIni.getMonth()+1).padStart(2,"0")
+            : String(dIni.getDate()).padStart(2,"0")+"/"+String(dIni.getMonth()+1).padStart(2,"0");
+          pontos.push({label, entradas, saidas, saldo: saldoAcum});
+        }
+        return fluxoCaixaChartSvg(pontos, 480, 204);
+      })()}
+      <div style="display:flex;align-items:center;justify-content:center;margin-top:14px;gap:14px;font-size:11px;font-weight:600;">
+        <span style="display:flex;align-items:center;gap:5px;color:var(--ink-soft);"><span style="width:10px;height:10px;border-radius:50%;background:var(--type-entrada);display:inline-block;"></span>Entradas</span>
+        <span style="display:flex;align-items:center;gap:5px;color:var(--ink-soft);"><span style="width:10px;height:10px;border-radius:50%;background:var(--type-despesa);display:inline-block;"></span>Saídas</span>
+        <span style="display:flex;align-items:center;gap:5px;color:var(--ink-soft);"><span style="width:10px;height:10px;border-radius:50%;background:var(--type-investimento);display:inline-block;"></span>Saldo</span>
+      </div>
+    </div>
     </div>
   `;
   root.querySelectorAll("[data-ir-meta]").forEach(el=> el.addEventListener("click", ()=>{ currentView="metas"; renderNav(); renderView(); renderMonthLabel(); }));
+  root.querySelectorAll("[data-fluxo-periodo]").forEach(b=> b.addEventListener("click", ()=>{ fluxoCaixaPeriodo = b.dataset.fluxoPeriodo; renderDashboard(root); }));
   root.querySelectorAll("[data-dash-orc-tab]").forEach(b=> b.addEventListener("click", ()=>{ dashOrcTab = b.dataset.dashOrcTab; renderDashboard(root); }));
   const nodeSaldoPrevisto = document.getElementById("nodeSaldoPrevisto");
   if(nodeSaldoPrevisto) nodeSaldoPrevisto.onclick = ()=> openDetalheSaldoPrevistoModal();
@@ -3921,7 +4070,7 @@ function renderContas(root){
               <button class="icon-btn kebab-btn" data-kebab-conta="${c.id}">${ICONS.kebab}</button>
             </div>
           </div>
-          <div style="font-family:var(--font-display);font-size:22px;font-weight:600;margin-top:12px;" class="${saldo<0?'neg':''}">${fmtMoneyIn(saldo, c.moeda)}</div>
+          <div style="font-family:var(--font-display);font-size:22px;font-weight:600;margin-top:12px;" class="${ehNegativo(saldo)?'neg':''}">${fmtMoneyIn(saldo, c.moeda)}</div>
           <div class="mini-note">Previsto: ${fmtMoneyIn(previsto, c.moeda)} · Saldo inicial: ${fmtMoneyIn(c.saldoInicial, c.moeda)}</div>
         </div>`;
       }).join("") : emptyState("Nenhuma conta cadastrada. Crie sua primeira conta para começar a lançar movimentações.")}
@@ -4164,22 +4313,22 @@ function renderCartoes(root){
         const totalFaturaAtual = itensAtualCartao.reduce((s,l)=> s + (l.tipo==="despesa"?l.valor:-l.valor), 0);
         const mesVencAtualCartao = c.diaVencimento < c.diaFechamento ? new Date(mesRefAtual.getFullYear(), mesRefAtual.getMonth()+1, c.diaVencimento) : new Date(mesRefAtual.getFullYear(), mesRefAtual.getMonth(), c.diaVencimento);
         return `
-        <div class="card ${c.padrao?'ribbon-padrao':''}" style="cursor:pointer;" data-extrato-cartao="${c.id}">
+        <div class="card ${c.padrao?'ribbon-padrao':''}" style="cursor:pointer;display:flex;flex-direction:column;min-height:130px;" data-extrato-cartao="${c.id}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-            <div style="min-width:0;">
-              <div style="display:flex;align-items:center;"><span class="cat-circle" style="background:${c.cor};color:${contrastIconColor(c.cor)};flex:none;">${CATEGORY_ICON_SVGS[c.icone]||CATEGORY_ICON_SVGS.card}</span><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nome}</strong></div>
-              <div class="mini-note" style="margin-top:4px;">Fecha dia ${c.diaFechamento} · Vence dia ${c.diaVencimento}</div>
-              <div class="mini-note">Limite: ${fmtMoney(c.limite)}</div>
+            <div style="display:flex;align-items:center;min-width:0;"><span class="cat-circle" style="background:${c.cor};color:${contrastIconColor(c.cor)};flex:none;">${CATEGORY_ICON_SVGS[c.icone]||CATEGORY_ICON_SVGS.card}</span><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nome}</strong></div>
+            <div style="display:flex;align-items:center;gap:4px;flex:none;" onclick="event.stopPropagation()">
+              <button class="icon-btn" data-editar-cartao="${c.id}" title="Editar">${ICONS.edit}</button>
+              <button class="icon-btn danger" data-excluir-cartao="${c.id}" title="Excluir">${ICONS.trash}</button>
             </div>
-            <div style="display:flex;align-items:flex-start;gap:8px;flex:none;">
-              <div style="text-align:right;line-height:1.4;">
-                ${venc ? `<div><span class="badge-status previsto" style="white-space:nowrap;display:inline-block;margin-bottom:4px;">Pagar até ${fmtDate(venc.toISOString().slice(0,10))}</span></div>` : ""}
-                <div class="mini-note" style="margin:0;">Vence em ${fmtDate(mesVencAtualCartao.toISOString().slice(0,10))}</div>
-                <div class="val" style="font-size:16px;margin-top:0;">${fmtMoney(totalFaturaAtual)}</div>
-              </div>
-              <div style="position:relative;" onclick="event.stopPropagation()">
-                <button class="icon-btn kebab-btn" data-kebab-cartao="${c.id}">${ICONS.kebab}</button>
-              </div>
+          </div>
+          <div class="mini-note" style="margin-top:8px;">Fecha dia ${c.diaFechamento} · Vence dia ${c.diaVencimento}</div>
+          <div class="mini-note">Limite: ${fmtMoney(c.limite)}</div>
+          <div style="flex:1;"></div>
+          <div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;">
+            <div style="text-align:right;line-height:1.4;">
+              ${venc ? `<div><span class="badge-status previsto" style="white-space:nowrap;display:inline-block;margin-bottom:4px;">Pagar até ${fmtDate(venc.toISOString().slice(0,10))}</span></div>` : ""}
+              <div class="mini-note" style="margin:0;">Vence em ${fmtDate(mesVencAtualCartao.toISOString().slice(0,10))}</div>
+              <div class="val" style="font-size:22px;margin-top:0;">${fmtMoney(totalFaturaAtual)}</div>
             </div>
           </div>
         </div>`;
@@ -4187,19 +4336,17 @@ function renderCartoes(root){
     </div>
   `;
   document.getElementById("btnNovoCartao").onclick = ()=> openCartaoModal(null);
-  root.querySelectorAll("[data-kebab-cartao]").forEach(b=> b.onclick = (e)=>{
+  root.querySelectorAll("[data-editar-cartao]").forEach(b=> b.onclick = (e)=>{
     e.stopPropagation();
-    const cid = b.dataset.kebabCartao;
-    openKebabMenu(b, [
-      {label:"Ver extrato", onClick:()=> openExtratoFaturaModal(cid)},
-      {label:"Editar", onClick:()=> openCartaoModal(cid)},
-      {label:"Excluir", danger:true, onClick: async ()=>{
-        const ok = await openConfirmPortal("Deseja excluir este cartão?", {danger:true});
-        if(!ok) return;
-        state.cartoes = state.cartoes.filter(c=>c.id!==cid);
-        await persist(); renderCartoes(root); showToast("Cartão excluído.");
-      }},
-    ]);
+    openCartaoModal(b.dataset.editarCartao);
+  });
+  root.querySelectorAll("[data-excluir-cartao]").forEach(b=> b.onclick = async (e)=>{
+    e.stopPropagation();
+    const cid = b.dataset.excluirCartao;
+    const ok = await openConfirmPortal("Deseja excluir este cartão?", {danger:true});
+    if(!ok) return;
+    state.cartoes = state.cartoes.filter(c=>c.id!==cid);
+    await persist(); renderCartoes(root); showToast("Cartão excluído.");
   });
   root.querySelectorAll("[data-extrato-cartao]").forEach(card=> card.addEventListener("click", (e)=>{
     if(e.target.closest(".icon-btn")) return;
@@ -4277,7 +4424,7 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
           <button class="close-x">&times;</button>
         </div>
         <div class="portal-body">
-          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:6px;">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:0;">
             <div></div>
             <div style="display:flex;align-items:center;gap:14px;justify-self:center;">
               <button class="icon-btn" id="btnMesFaturaPrev">${ICONS.chevronLeft||'‹'}</button>
@@ -4286,7 +4433,7 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
             </div>
             <div style="font-family:var(--font-display);font-size:20px;font-weight:600;justify-self:end;">Total: ${fmtMoney(total)}</div>
           </div>
-          <p class="mini-note">Vence em ${fmtDate(vencimento.toISOString().slice(0,10))}. As despesas só afetam o saldo da conta quando a fatura é paga.</p>
+          <p class="mini-note" style="margin-top:0;">Vence em ${fmtDate(vencimento.toISOString().slice(0,10))}. As despesas só afetam o saldo da conta quando a fatura é paga.</p>
           <div class="table-scroll" style="max-height:360px;overflow-y:auto;">
           <table>
             <thead><tr><th>Data/Hora</th><th>Nome</th><th>Categoria</th><th style="text-align:right">Valor</th></tr></thead>
@@ -4364,7 +4511,7 @@ function openMesFaturaPopover(triggerEl, lanc, onDone){
 
 function openCartaoModal(id){
   const editing = !!id;
-  const base = editing ? state.cartoes.find(c=>c.id===id) : {id:null,nome:"",contaVinculada:state.contas[0]?state.contas[0].id:null,diaFechamento:25,diaVencimento:5,limite:0,cor:"#B8863A",icone:"card",padrao:false,ativo:true};
+  const base = editing ? state.cartoes.find(c=>c.id===id) : {id:null,nome:"",bandeira:"outros",contaVinculada:state.contas[0]?state.contas[0].id:null,diaFechamento:25,diaVencimento:5,limite:0,ultimosDigitos:"",cor:"#B8863A",icone:"card",padrao:false,ativo:true};
   const overlay = document.createElement("div");
   overlay.className="portal-overlay";
   overlay.innerHTML = `
@@ -4381,9 +4528,21 @@ function openCartaoModal(id){
             ${colorPickerHtml("fCor", base.cor)}
           </div>
         </div>
-        <label class="field">Conta vinculada (débito da fatura)
-          ${customSelectHtml("fConta", state.contas.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:entityCircleHtml(c.cor,c.icone)})), base.contaVinculada, "Selecionar conta")}
-        </label>
+        <div class="field-row" style="grid-template-columns:1.6fr 1fr 0.7fr;gap:12px;align-items:flex-end;">
+          <label class="field">Conta vinculada (débito da fatura)
+            ${customSelectHtml("fConta", state.contas.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:entityCircleHtml(c.cor,c.icone)})), base.contaVinculada, "Selecionar conta")}
+          </label>
+          <label class="field">Bandeira
+            ${customSelectHtml("fBandeira", [
+              {id:"mastercard", label:"Mastercard", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);">${CATEGORY_ICON_SVGS.bandeiraMastercard}</span>`},
+              {id:"visa", label:"Visa", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);">${CATEGORY_ICON_SVGS.bandeiraVisa}</span>`},
+              {id:"outros", label:"Outros", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);color:var(--gray-400);">${CATEGORY_ICON_SVGS.bandeiraOutros}</span>`}
+            ], base.bandeira||"outros", "Selecionar bandeira")}
+          </label>
+          <label class="field">Últimos 4 dígitos
+            <input type="text" id="fUltimosDigitos" maxlength="4" inputmode="numeric" placeholder="0000" value="${base.ultimosDigitos||''}">
+          </label>
+        </div>
         <div class="field-row3">
           <label class="field">Fecha dia <input type="number" min="1" max="31" id="fFech" value="${base.diaFechamento}"></label>
           <label class="field">Vence dia <input type="number" min="1" max="31" id="fVenc" value="${base.diaVencimento}"></label>
@@ -4405,10 +4564,17 @@ function openCartaoModal(id){
   maskMoney(overlay.querySelector("#fLimite"), base.limite);
   wireColorPicker(overlay, "fCor");
   wireIconPicker(overlay, "fIcone");
+  const fUltimosDigitosEl = overlay.querySelector("#fUltimosDigitos");
+  fUltimosDigitosEl.addEventListener("input", ()=>{ fUltimosDigitosEl.value = fUltimosDigitosEl.value.replace(/\D/g,"").slice(0,4); });
   let padraoValCartao = base.padrao;
   overlay.querySelector("#fPadrao").onclick = (e)=>{ padraoValCartao = !padraoValCartao; e.currentTarget.classList.toggle("on", padraoValCartao); };
   overlay.querySelector(".close-x").onclick=()=>overlay.remove();
   overlay.querySelector("#btnCancel").onclick=()=>overlay.remove();
+  wireCustomSelect(overlay, "fBandeira", [
+    {id:"mastercard", label:"Mastercard", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);">${CATEGORY_ICON_SVGS.bandeiraMastercard}</span>`},
+    {id:"visa", label:"Visa", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);">${CATEGORY_ICON_SVGS.bandeiraVisa}</span>`},
+    {id:"outros", label:"Outros", iconHtml:`<span class="cat-circle" style="background:var(--surface-2);color:var(--gray-400);">${CATEGORY_ICON_SVGS.bandeiraOutros}</span>`}
+  ], (v)=>{});
   wireCustomSelect(overlay, "fConta", state.contas.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:entityCircleHtml(c.cor,c.icone)})), (v)=>{});
   overlay.querySelector("#btnSave").onclick = async ()=>{
     const nome = overlay.querySelector("#fNome").value.trim();
@@ -4416,10 +4582,12 @@ function openCartaoModal(id){
     const data = {
       id: editing?id:uid("cartao"), nome,
       icone: overlay.querySelector("#fIcone").value || "card",
+      bandeira: overlay.querySelector("#fBandeira").value || "outros",
       contaVinculada: overlay.querySelector("#fConta").value,
       diaFechamento: Number(overlay.querySelector("#fFech").value)||25,
       diaVencimento: Number(overlay.querySelector("#fVenc").value)||5,
       limite: moneyVal(overlay.querySelector("#fLimite")),
+      ultimosDigitos: fUltimosDigitosEl.value.trim(),
       cor: overlay.querySelector("#fCor").value, padrao: padraoValCartao, ativo:true
     };
     if(padraoValCartao){ state.cartoes.forEach(c=> c.padrao=false); }
@@ -4452,7 +4620,7 @@ function renderCategorias(root){
     {tipo:"despesa", label:"Despesas", icon:"kpiArrowUp"},
     {tipo:"investimento", label:"Investimentos", icon:"kpiChart"},
   ];
-  const nivel1Filtradas = catNivel1().filter(c=>c.tipo===catTabTipo && c.nome!=="Aportes (orçamento)").sort((a,b)=> a.nome.localeCompare(b.nome, 'pt-BR'));
+  const nivel1Filtradas = catNivel1().filter(c=>c.tipo===catTabTipo && c.nome!=="Aportes" && c.nome!=="Aportes (orçamento)").sort((a,b)=> a.nome.localeCompare(b.nome, 'pt-BR'));
   const arquivadasFiltradas = state.categorias.filter(c=>c.arquivada && c.tipo===catTabTipo);
   root.innerHTML = `
     <div class="tabs-card" style="justify-content:space-between;align-items:center;">
@@ -4737,14 +4905,14 @@ function realizadoOrcamento(o, monthDate, apenasComConta){
   const cat = categoriaById(o.categoriaId); if(!cat) return 0;
   const idsRelevantes = cat.categoriaPaiId ? [cat.id] : [cat.id, ...catFilhas(cat.id).map(c=>c.id)];
   if(cat.tipo==="investimento"){
-    if(cat.nome==="Aportes (orçamento)"){
+    if(cat.nome==="Aportes" || cat.nome==="Aportes (orçamento)"){
       return state.investimentos.aportes.filter(a=> a.tipo==="aporte" && isInMonth(a.data, monthDate) && (!apenasComConta || a.contaId)).reduce((s,a)=>s+a.valor,0);
     }
     return state.investimentos.aportes.filter(a=> a.tipo==="aporte" && isInMonth(a.data, monthDate) && a.categoriaId && idsRelevantes.includes(a.categoriaId) && (!apenasComConta || a.contaId))
       .reduce((s,a)=>s+a.valor,0);
   }
   return lancamentosDoMes(monthDate).filter(l=> l.tipo===cat.tipo).reduce((s,l)=>{
-    return s + partesCategoriaDoLancamento(l).filter(parte=> idsRelevantes.includes(parte.categoriaId)).reduce((s2,parte)=>s2+parte.valor,0);
+    return s + partesCategoriaDoLancamento(l).filter(parte=> idsRelevantes.includes(parte.categoriaId) || idsRelevantes.includes(parte.subcategoriaId)).reduce((s2,parte)=>s2+parte.valor,0);
   }, 0);
 }
 
@@ -4787,7 +4955,7 @@ function renderOrcamento(root){
           const pct = valorPlanejadoMes>0 ? Math.min(150, (realizado/valorPlanejadoMes*100)) : 0;
           const over = realizado > valorPlanejadoMes;
           const destacarNegativo = over && cat && cat.tipo!=="entrada";
-          const corBarra = (cat && cat.tipo!=="entrada") ? (pct>=95 ? "var(--negative)" : pct>=70 ? "var(--gold)" : "#173E37") : "var(--primary-2)";
+          const corBarra = cat && cat.tipo==="entrada" ? "var(--type-entrada)" : cat && cat.tipo==="investimento" ? "var(--type-investimento)" : "var(--type-despesa)";
           return `<tr data-id="${o.id}" data-catid="${o.categoriaId}" class="orc-row" style="cursor:pointer;">
             <td>${cat?catCircleHtml(cat)+catLabel(cat.id):"—"}</td>
             <td>${fmtMoney(valorPlanejadoMes)}</td>
@@ -4854,9 +5022,9 @@ async function excluirOrcamentoComEscopo(oid){
 }
 
 function getOrCreateCategoriaOrcamentoInvestimento(){
-  let cat = state.categorias.find(c=>c.tipo==="investimento" && !c.categoriaPaiId && c.nome==="Aportes (orçamento)");
+  let cat = state.categorias.find(c=>c.tipo==="investimento" && !c.categoriaPaiId && (c.nome==="Aportes" || c.nome==="Aportes (orçamento)"));
   if(!cat){
-    cat = { id:uid("cat"), nome:"Aportes (orçamento)", tipo:"investimento", categoriaPaiId:null, cor:"#2E5C8A", icone:"investment" };
+    cat = { id:uid("cat"), nome:"Aportes", tipo:"investimento", categoriaPaiId:null, cor:"#2E5C8A", icone:"investment" };
     state.categorias.push(cat);
   }
   return cat;
@@ -4881,7 +5049,12 @@ function openOrcamentoModal(id, tipoOverride){
     const subcats = selCategoriaId ? catFilhas(selCategoriaId) : [];
     overlay.innerHTML = `
       <div class="portal-modal">
-        <div class="portal-head"><h2>${editing?"Editar orçamento":"Novo orçamento"} <span class="chip ${tipoAtivo}" style="margin-left:6px;">${TIPO_LABEL_ORC[tipoAtivo]}</span></h2><button class="close-x">&times;</button></div>
+        <div class="portal-head"><h2>${editing?"Editar orçamento":"Novo orçamento"} <span class="chip ${tipoAtivo}" style="margin-left:6px;">${TIPO_LABEL_ORC[tipoAtivo]}</span></h2>
+          <div style="display:flex;align-items:center;gap:4px;">
+            ${editing?`<button class="icon-btn danger" id="btnDelOrcModal" title="Excluir">${ICONS.trash}</button>`:""}
+            <button class="close-x">&times;</button>
+          </div>
+        </div>
         <div class="portal-body">
           ${!isInvestimento ? `
           <div class="field-row">
@@ -4893,7 +5066,7 @@ function openOrcamentoModal(id, tipoOverride){
             </label>
           </div>` : `<p class="mini-note" style="margin-bottom:12px;">Este é o valor que você planeja aportar em investimentos no mês — a categoria específica do ativo não importa aqui.</p>`}
           <div class="field-row">
-            <label class="field">Valor planejado <input id="fValor"></label>
+            <label class="field">Valor orçado <input id="fValor"></label>
             <label class="field">Válido a partir de
               <input type="month" id="fValidoAPartir" value="${(base.validoApartirDe||todayStr()).slice(0,7)}">
             </label>
@@ -4904,14 +5077,49 @@ function openOrcamentoModal(id, tipoOverride){
             <span>Também criar este orçamento para cada subcategoria (${subcats.length})</span>
           </label>` : ""}
           <p class="mini-note">O orçamento se repete todo mês a partir da data acima (meses anteriores não são afetados).</p>
+          ${editing && (selCategoriaId || isInvestimento) ? (()=>{
+            const catParaHistorico = isInvestimento ? {id:selCategoriaId, tipo:"investimento", categoriaPaiId:null} : (selSubcategoriaId ? categoriaById(selSubcategoriaId) : categoriaById(selCategoriaId));
+            if(!catParaHistorico) return "";
+            const orcTemp = {categoriaId: catParaHistorico.id};
+            const meses = [];
+            for(let i=5; i>=0; i--){
+              const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1);
+              const valor = realizadoOrcamento(orcTemp, d);
+              meses.push({label: MONTH_NAMES[d.getMonth()].slice(0,3), valor, mesKey: monthKey(d)});
+            }
+            const mesesComDados = meses.filter(m=>m.valor>0);
+            const base6 = mesesComDados.length>0 ? mesesComDados : meses;
+            const media = base6.reduce((s,m)=>s+m.valor,0) / base6.length;
+            const corTipo = tipoAtivo==="entrada" ? "var(--type-entrada)" : tipoAtivo==="investimento" ? "var(--type-investimento)" : "var(--type-despesa)";
+            return `
+          <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+            <h4 style="margin:0 0 4px;font-size:13px;">Evolução mensal</h4>
+            <p class="mini-note" style="margin:0 0 12px;">Média dos últimos ${base6.length} mês(es) com dados: <strong style="color:var(--ink);">${fmtMoney(media)}</strong> <button type="button" class="btn ghost small" id="btnUsarMediaOrc" style="padding:2px 8px;margin-left:4px;color:var(--sidebar-accent);">Usar este valor</button></p>
+            ${historicoConsumoChartSvg(meses, 420, 110, corTipo)}
+          </div>`;
+          })() : ""}
         </div>
         <div class="portal-foot">
-          <div>${editing?`<button class="btn danger" id="btnDelOrcModal">Excluir</button>`:""}</div>
+          <div></div>
           <div style="display:flex;gap:10px;"><button class="btn ghost" id="btnCancel">Cancelar</button><button class="btn primary" id="btnSave">Salvar</button></div>
         </div>
       </div>`;
     document.body.appendChild(overlay);
     maskMoney(overlay.querySelector("#fValor"), base.valorPlanejado);
+    const btnUsarMediaOrc = overlay.querySelector("#btnUsarMediaOrc");
+    if(btnUsarMediaOrc) btnUsarMediaOrc.onclick = ()=>{
+      const catParaHistorico = isInvestimento ? {id:selCategoriaId} : (selSubcategoriaId ? categoriaById(selSubcategoriaId) : categoriaById(selCategoriaId));
+      const orcTemp = {categoriaId: catParaHistorico.id};
+      const meses = [];
+      for(let i=5; i>=0; i--){
+        const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-i, 1);
+        meses.push(realizadoOrcamento(orcTemp, d));
+      }
+      const mesesComDados = meses.filter(v=>v>0);
+      const base6 = mesesComDados.length>0 ? mesesComDados : meses;
+      const media = base6.reduce((s,v)=>s+v,0) / base6.length;
+      maskMoney(overlay.querySelector("#fValor"), round2(media));
+    };
     if(!isInvestimento){
       wireCustomSelect(overlay, "fCat", catsOrcamento.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), (v)=>{ selCategoriaId=v; selSubcategoriaId=null; draw(); });
       wireCustomSelect(overlay, "fSubcat", subcats.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), (v)=>{ selSubcategoriaId=v||null; draw(); });
@@ -5118,7 +5326,10 @@ function renderMetas(root){
               <strong>${m.nome}</strong>
               <p class="mini-note" style="margin:2px 0 0;">${concluida?'🎉 Concluída':m.dataAlvo?(diasRestantes>=0?`${diasRestantes} dia(s) restantes`:`${Math.abs(diasRestantes)} dia(s) atrasada`):'Sem prazo definido'}</p>
             </div>
-            <span class="tt-icon" style="color:var(--gray-400);">${ICONS.chevronRight||'›'}</span>
+            <div style="display:flex;align-items:center;gap:2px;" onclick="event.stopPropagation()">
+              <button class="icon-btn" data-editar-meta="${m.id}" title="Editar">${ICONS.edit}</button>
+              <button class="icon-btn danger" data-excluir-meta="${m.id}" title="Excluir">${ICONS.trash}</button>
+            </div>
           </div>
           <div class="progress-mini" style="margin-bottom:6px;"><div style="width:${pct}%;background:${concluida?'var(--positive)':m.cor};"></div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -5131,6 +5342,13 @@ function renderMetas(root){
   `;
   document.getElementById("btnNovaMeta").onclick = ()=> openMetaModal(null);
   root.querySelectorAll("[data-meta]").forEach(el=> el.addEventListener("click", ()=> openMetaDetalheModal(el.dataset.meta)));
+  root.querySelectorAll("[data-editar-meta]").forEach(b=> b.onclick = ()=> openMetaModal(b.dataset.editarMeta));
+  root.querySelectorAll("[data-excluir-meta]").forEach(b=> b.onclick = async ()=>{
+    const ok = await openConfirmPortal("Excluir esta meta? Essa ação não pode ser desfeita.", {danger:true});
+    if(!ok) return;
+    state.metas = state.metas.filter(m=>m.id!==b.dataset.excluirMeta);
+    await persist(); renderMetas(root); showToast("Meta excluída.");
+  });
 }
 function openMetaDetalheModal(metaId){
   const meta = state.metas.find(m=>m.id===metaId);
@@ -5149,8 +5367,6 @@ function openMetaDetalheModal(metaId){
       <div class="portal-modal">
         <div class="portal-head"><h2 style="display:flex;align-items:center;gap:8px;">${catCircleHtml({cor:meta.cor,icone:meta.icone})}${meta.nome}${concluida?' 🎉':''}</h2>
           <div style="display:flex;align-items:center;gap:4px;">
-            <button class="icon-btn" id="btnEditarMeta" title="Editar">${ICONS.edit}</button>
-            <button class="icon-btn danger" id="btnExcluirMeta" title="Excluir">${ICONS.trash}</button>
             <button class="close-x">&times;</button>
           </div>
         </div>
@@ -5202,13 +5418,6 @@ function openMetaDetalheModal(metaId){
       concluidaState = !concluidaState;
       meta.concluida = concluidaState;
       await persist(); renderView(); draw();
-    };
-    overlay.querySelector("#btnEditarMeta").onclick = ()=>{ overlay.remove(); openMetaModal(meta.id); };
-    overlay.querySelector("#btnExcluirMeta").onclick = async ()=>{
-      const ok = await openConfirmPortal("Excluir esta meta? Essa ação não pode ser desfeita.", {danger:true});
-      if(!ok) return;
-      state.metas = state.metas.filter(m=>m.id!==meta.id);
-      await persist(); overlay.remove(); renderView(); showToast("Meta excluída.");
     };
     overlay.querySelectorAll("[data-tipo-mov]").forEach(b=> b.onclick = ()=>{
       tipoMov = b.dataset.tipoMov;
@@ -5778,7 +5987,7 @@ function openSobreModal(){
       <div class="portal-body">
         <p style="margin-bottom:10px;"><strong>Dolfin</strong> — Controle Financeiro Pessoal</p>
         <p class="mini-note" style="margin-bottom:10px;">Aplicativo único (HTML/CSS/JS), sem servidor, com dados salvos diretamente no seu computador via File System Access API. Parte da família de ferramentas TYVRA.</p>
-        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.5.6</p>
+        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.5.7.060</p>
         <p class="mini-note">Navegador recomendado: Chrome ou Edge.</p>
       </div>
       <div class="portal-foot"><div></div><button class="btn ghost" id="btnFecharSobre">Fechar</button></div>

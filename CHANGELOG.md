@@ -3,6 +3,34 @@
 Todas as mudanças relevantes deste projeto serão documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [1.5.7] - 2026-08-27
+
+Rodada de correções críticas de cálculo, novo KPI de Fluxo de Caixa no Dashboard, e diversos refinamentos visuais e de usabilidade.
+
+### Added
+- **Novo KPI "Fluxo de caixa"** no Dashboard: gráfico de linha com Entradas, Saídas e Saldo acumulado, com seletor de período (7D/30D/3M/6M/12M) e agregação semanal para reduzir ruído visual em períodos longos
+- Saudação "Bem-vindo, [nome]" no topo do Dashboard
+- **Histórico de consumo no Orçamento** ("Evolução mensal"): mostra a média dos últimos 6 meses com dados (ou menos, se não houver histórico suficiente) e um gráfico de linha da evolução, com botão "Usar este valor" para aplicar a média diretamente como valor orçado
+- Campo de **bandeira do cartão** (Mastercard, Visa, Outros) com logo, e campo de **últimos 4 dígitos**, no formulário de cartão
+- Configuração "Mostrar apenas contas com saldo" agora também compatível de forma consistente com o Dashboard
+- Ícones de editar/excluir diretos (sem menu de contexto) em Cartões e Metas
+
+### Fixed
+- **Crítico:** orçamentos definidos no nível de subcategoria apareciam sempre zerados no "Realizado", mesmo com lançamentos reais — causado por uma comparação que só verificava a categoria-pai, nunca a subcategoria
+- **Crítico:** saldos de conta podiam aparecer como "-R$ 0,00" (negativo) mesmo sendo efetivamente zero, devido a resíduo de arredondamento de ponto flutuante acumulado em somas sucessivas — corrigido na origem do cálculo, não apenas na exibição
+- **Crítico:** ativar parcelamento com divisão por categoria já configurada podia duplicar o valor total do lançamento, ignorando a escolha entre "Valor é Total" ou "Valor é Parcela"
+- Cor do saldo consistente com o valor exibido em todos os lugares (Dashboard, tela de Contas, KPIs)
+
+### Changed
+- Barras de progresso do Orçamento usam cor fixa por tipo (verde/vermelho/azul), sem variar conforme o percentual de execução
+- "Valor planejado" renomeado para "Valor orçado"
+- "Aportes (Orçamento)" renomeado para "Aportes" (compatível com arquivos já existentes)
+- Botão de excluir do Orçamento movido do rodapé para um ícone no cabeçalho do modal
+- Layout do topbar: título/subtítulo de página removidos, controle de mês centralizado, campo de busca mais estreito
+- Formulário de cartão reorganizado: Conta vinculada, Bandeira e Últimos 4 dígitos na mesma linha
+- Nome sugerido para novo arquivo de dados alterado para `dbase.json`
+- Diversos ajustes de espaçamento e tamanho de fonte no Dashboard, Cartões e Orçamento
+
 ## [1.5.6] - 2026-08-25
 
 Versão consolidada com o redesenho visual completo (identidade navy/teal, modo escuro), a reformulação das telas de Lançamentos, Categorias, Orçamento e Cartões, e a implementação de multicategoria e parcelamento avançado.
