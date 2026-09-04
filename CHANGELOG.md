@@ -18,33 +18,97 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
-## [1.5.5] - 2026-08-24
+## [1.7.045] - 2026-09-04
 
-### Fixed
-- **Crítico:** a divisão de um lançamento em múltiplas categorias não funcionava quando combinada com parcelamento — o sistema criava as parcelas normalmente, mas descartava silenciosamente a divisão por categoria, salvando tudo em uma única categoria (geralmente diferente da esperada). Como essa combinação não tem suporte real no momento, ela foi bloqueada: ativar parcelamento agora desliga automaticamente a divisão por categoria, com uma mensagem explicando o motivo
-- Texto "(total parcelado)" nas Últimas Transações do Dashboard não aparece mais em negrito
-
-### Changed
-- Título "Lançamentos" na tela de detalhe da meta agora usa a mesma fonte dos títulos de KPI do Dashboard
-- Valor já atingido em cada meta ganhou mais destaque visual
-- No card de cada cartão, a linha "Fecha dia / Vence dia" foi reposicionada para ficar logo abaixo do nome do cartão; o valor da fatura atual agora sempre aparece abaixo da data de vencimento, independentemente de haver alerta de pendência
-
-## [1.5.4] - 2026-08-24
-
-### Fixed
-- **Crítico:** ao editar um lançamento dividido em múltiplas categorias, o campo "Valor" principal continuava mostrando o valor de apenas uma das categorias (não o total do lançamento), fazendo a validação interna de soma falhar silenciosamente e impedindo qualquer alteração de ser salva. Corrigido para que, ao abrir um lançamento assim para edição, o valor total seja recalculado corretamente a partir da soma de todas as categorias
+Novo ciclo de versionamento (`1.7.000` em diante). Foco desta rodada: barra de topo unificada, redesenho abrangente dos KPIs do Dashboard, correções de alinhamento no formulário de Lançamento, e padronização de ícones.
 
 ### Added
-- Dashboard: no card "Últimas transações", cada linha agora mostra "Categoria › Subcategoria" com o ícone da subcategoria (ou da categoria, quando a subcategoria é "Outros")
-- Lista de Lançamentos: um ícone específico identifica lançamentos divididos em múltiplas categorias
-- Soma das categorias na divisão por categoria agora atualiza em tempo real conforme os valores são digitados, sem precisar adicionar uma nova linha
-- Metas: ao definir um valor já acumulado na criação de uma meta, um lançamento de saldo inicial é registrado automaticamente no histórico
-- Campo de descrição adicionado às metas, exibido no formulário de criação/edição e no detalhe da meta
+- Barra de topo unificada: título/subtítulo da página, navegador de mês, busca, notificações, ocultar valores e perfil reunidos em uma única linha, com fundo claro e sombra leve — substitui a antiga faixa branca fixa
+- Menu de usuário (clique na foto/avatar) redesenhado: cabeçalho com avatar, nome e e-mail, seguido de "Perfil", "Configurações" e "Sair"
+- Botão de expandir/minimizar o menu lateral redesenhado como círculo preenchido, com hover e posição ajustados
+- Tags selecionadas no formulário de Lançamento agora têm um "×" para remoção rápida
+- Campo "Cartão de crédito" no lançamento tornou-se obrigatório ao ativar a opção
+- Exclusão de categoria com subcategorias agora oferece 3 opções (excluir tudo / arquivar / cancelar), com aviso sobre perda de histórico
 
 ### Changed
-- Card de Cartões: alerta de pendência reposicionado para cima do valor da fatura atual
-- Metas: "Histórico desta meta" renomeado para "Lançamentos"; "Adicionar valor" renomeado para "Valor"
-- Botões de "Cancelar" em todo o sistema, e os botões da tela de exclusão de lançamento recorrente, agora têm borda cinza visível
+- **Reorganização completa do Dashboard**: KPIs de Receitas, Despesas, Saldo Inicial/Atual/Previsto, Resultado do Mês, Investido, Patrimônio e Rentabilidade redesenhados em um padrão único (ícone + rótulo, valor em destaque, linha de contexto); Orçamento, Cartões, Últimos Lançamentos, Variação de Categorias e Fluxo de Caixa reordenados e realinhados (larguras e alturas equalizadas entre cards pareados)
+- Gráfico de "Fluxo de caixa" com linha de Saldo Acumulado e área preenchida; fontes de eixos, legenda e tooltip reduzidas para um visual mais compacto
+- "Variação de Categorias" expandida para Top 8 e categoria "Outros" excluída da análise
+- Orçamento do mês: categorias listadas em ordem alfabética
+- Ícone de "Investimento" trocado (cofrinho → seta de tendência) e ícone de "Orçamento" trocado (relógio → gráfico de barras), aplicados consistentemente em todo o sistema
+- Logo do menu lateral centralizado
+- No formulário de Lançamento: "Cartão de Crédito" e "Multicategoria" alinhados de forma consistente com a primeira linha de categoria, independente de quantas linhas adicionais existam; modal mais estreito
+
+### Fixed
+- **Crítico:** ao ativar "Cartão de Crédito" e depois trocar o tipo do lançamento para "Entrada", o botão Efetivado ficava travado e o campo Conta continuava mostrando a conta do cartão — formulário agora reseta corretamente
+- Ordenação de "Variação de Categorias" corrigida para usar a métrica percentual exibida, não o valor absoluto em R$
+- Extrato de investimento agora mostra apenas os lançamentos do mês em exibição, e o "Saldo inicial" só aparece no mês de criação do ativo (nos meses seguintes ele se acumula silenciosamente na base de cálculo)
+- KPIs da tela de extrato de investimento passaram a referenciar somente o mês vigente
+- Layout do campo "Valor" quebrava ao ativar Multicategoria — corrigido
+- Largura de "Cartões de Crédito" ajustada para bater exatamente com a largura de "Contas" no Dashboard
+
+## [1.6.127] - 2026-08-31
+
+Ciclo de versionamento alterado para o formato `X.Y.NNN` (NNN = total acumulado de alterações desde o `1.6.000`, substituindo o antigo `X.Y.Z.NNN`). Rodada extensa de redesenho do Dashboard, do formulário de Lançamento e da navegação geral do sistema.
+
+### Added
+- **Menu lateral colapsável**: botão dedicado reduz a sidebar para uma faixa só com ícones; estado persiste no arquivo entre sessões
+- **Barra de topo unificada**: título/subtítulo da página, navegador de mês, busca global, notificações, ocultar valores e perfil reunidos em uma única barra com fundo claro e sombra leve, substituindo a antiga faixa branca fixa
+- Botão de perfil (topo) com dropdown: Editar perfil, Configurações e Sair
+- Toggle **"Mostrar na tela inicial"** por cartão, permitindo ocultar cartões específicos do Dashboard sem afetar a tela de Cartões
+- Suporte a **arquivamento de cartões**
+- Ícones de Relatório (placeholder, sem função ainda) em Contas e Cartões
+- Exclusão de categoria com subcategorias agora pergunta explicitamente: excluir tudo, arquivar em vez disso, ou cancelar — com aviso sobre perda de histórico de lançamentos
+- Gráfico de "Fluxo de caixa" redesenhado como barras diárias (Entradas/Saídas) com linha de Saldo acumulado, área preenchida, suporte a valores negativos no eixo e tooltip com detalhamento por dia
+- Novos KPIs no estilo cartão único (ícone + rótulo + valor + linha de contexto) para Receitas, Despesas, Saldo Inicial, Saldo Atual, Saldo Previsto, Resultado do Mês, Investido no Mês, Patrimônio Investido e Rentabilidade no Mês — com gráfico de tendência no Resultado do Mês
+- Campo "Despesa de Cartão" no lançamento renomeado para **"Cartão de Crédito"**, agora oculta o campo Conta e mostra Cartão + Fatura na mesma linha quando ativado; seleção do cartão passou a ser obrigatória
+
+### Changed
+- Ícones de conta padronizados para "banco" em todo o sistema
+- "Cartões" renomeado para **"Cartões de Crédito"** em todas as referências (menu, títulos de tela, KPIs)
+- Reorganização completa do Dashboard: Orçamento, Metas e Contas agrupados em uma linha de 3 colunas; Fluxo de Caixa e Cartões de Crédito lado a lado; Top Categorias, Variação de Categorias e Últimos Lançamentos com ícones "flat" (sem fundo) no cabeçalho
+- No formulário de Lançamento: campos "Despesa de Cartão"/"Multicategoria" reposicionados para o canto direito da linha, com alinhamento vertical corrigido; modal mais estreito; textos "Efetivado", "Multicategoria" e "Cartão de Crédito" com o rótulo acima do botão liga/desliga
+- Categorias padrão do "modo limpo" simplificadas: cada grupo (Salário, Alimentação, Compras, Saúde, Finanças etc.) mantém apenas a subcategoria "Outros"
+- Ícones de bandeira de cartão (Visa/Mastercard) restritos à tela de Cartão, removidos do seletor genérico de ícones
+
+### Fixed
+- **Crítico:** orçamentos do tipo investimento (Aportes) eram sempre ignorados no cálculo do Saldo Previsto, mesmo quando deveriam contar como saída futura
+- **Crítico:** ao trocar o tipo do lançamento de "Despesa com Cartão de Crédito" para "Entrada", o botão Efetivado permanecia travado e o campo Conta continuava mostrando a conta do cartão em vez de um seletor normal — formulário agora reseta corretamente ao trocar o tipo
+- Ordenação da lista "Variação de Categorias" corrigida para usar a mesma métrica (percentual) exibida na tela, em vez do valor absoluto em R$
+- Layout do campo "Valor" quebrava ao ativar Multicategoria (texto "Soma das categorias" forçava quebra de linha) — corrigido
+- Alinhamento do toggle "Multicategoria" com múltiplas linhas de categoria: agora acompanha a primeira linha, em vez de flutuar no meio do bloco inteiro
+- "Previsto" nos KPIs de Receitas/Despesas agora soma efetivado + previsto (antes mostrava só o previsto)
+
+## [1.5.7] - 2026-08-27
+
+Rodada de correções críticas de cálculo, novo KPI de Fluxo de Caixa no Dashboard, e diversos refinamentos visuais e de usabilidade.
+
+### Added
+- **Novo KPI "Fluxo de caixa"** no Dashboard: gráfico de linha com Entradas, Saídas e Saldo acumulado, com seletor de período (7D/30D/3M/6M/12M) e agregação semanal para reduzir ruído visual em períodos longos
+- Saudação "Bem-vindo, [nome]" no topo do Dashboard
+- **Histórico de consumo no Orçamento** ("Evolução mensal"): mostra a média dos últimos 6 meses com dados (ou menos, se não houver histórico suficiente) e um gráfico de linha da evolução, com botão "Usar este valor" para aplicar a média diretamente como valor orçado
+- Campo de **bandeira do cartão** (Mastercard, Visa, Outros) com logo, e campo de **últimos 4 dígitos**, no formulário de cartão
+- Ícones de editar/excluir diretos (sem menu de contexto) em Cartões e Metas
+
+### Fixed
+- **Crítico:** orçamentos definidos no nível de subcategoria apareciam sempre zerados no "Realizado", mesmo com lançamentos reais — causado por uma comparação que só verificava a categoria-pai, nunca a subcategoria
+- **Crítico:** saldos de conta podiam aparecer como "-R$ 0,00" (negativo) mesmo sendo efetivamente zero, devido a resíduo de arredondamento de ponto flutuante acumulado em somas sucessivas — corrigido na origem do cálculo, não apenas na exibição
+- **Crítico:** ativar parcelamento com divisão por categoria já configurada podia duplicar o valor total do lançamento, ignorando a escolha entre "Valor é Total" ou "Valor é Parcela"
+- Cor do saldo consistente com o valor exibido em todos os lugares (Dashboard, tela de Contas, KPIs)
+
+### Changed
+- Barras de progresso do Orçamento usam cor fixa por tipo (verde/vermelho/azul), sem variar conforme o percentual de execução
+- "Valor planejado" renomeado para "Valor orçado"
+- "Aportes (Orçamento)" renomeado para "Aportes" (compatível com arquivos já existentes)
+- Botão de excluir do Orçamento movido do rodapé para um ícone no cabeçalho do modal
+- Layout do topbar: título/subtítulo de página removidos, controle de mês centralizado, campo de busca mais estreito
+- Formulário de cartão reorganizado: Conta vinculada, Bandeira e Últimos 4 dígitos na mesma linha
+- Nome sugerido para novo arquivo de dados alterado para `dbase.json`
+- Diversos ajustes de espaçamento e tamanho de fonte no Dashboard, Cartões e Orçamento
+
+## [1.5.4]–[1.5.6] - 2026-08-24 a 2026-08-25
+
+Versões intermediárias consolidadas: redesenho visual completo (identidade navy/teal, modo escuro), reformulação de multicategoria para modelo de registro único (categoriasSplits), e correção do bug de exclusão não persistida antes de fechar a página.
 
 ## [1.5.3] - 2026-08-21
 
@@ -288,7 +352,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 - Cores do sistema padronizadas para a nova identidade da sidebar: cor primária alterada de verde escuro para azul-marinho em toda a aplicação
 - Item de menu selecionado voltou a usar verde claro como destaque, no lugar do azul/teal aplicado anteriormente
 - Botão "Desconectar" removido da barra lateral; substituído por um indicador de "Última sincronização" com data e hora, clicável para desconectar (com confirmação)
-- Altura dos cards de KPI da primeira linha do Dashboard reduzida, aproximando do layout de
+- Altura dos cards de KPI da primeira linha do Dashboard reduzida, aproximando do layout de referência
 
 ## [1.4.5] - 2026-08-19
 
@@ -862,7 +926,6 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 ### Fixed
 - **Crítico:** menu de ações (⋮) cortado/inacessível quando o botão estava perto do fim da página — o menu sempre abria para baixo sem checar se cabia na tela; agora inverte para cima quando necessário
 - Botão "+" quebrando o aplicativo inteiro após ajuste anterior no código (chave sobrando)
-
 
 ## [1.0.2] - 2026-07-28 10:00
 
