@@ -18,6 +18,38 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
+## [1.8.161] - 2026-09-11
+
+Ciclo extenso de refinamento visual e funcional do Dashboard, Relatórios, formulário de Lançamento e tela de Lançamentos. Este release consolida dezenas de rodadas de ajuste fino de layout, uma nova página de Relatórios com filtros avançados, um indicador de Saúde Financeira, e uma reestruturação completa do formulário de lançamento.
+
+### Added
+- **Página "Relatório"**: nova entrada no menu lateral com consultas avançadas sobre os lançamentos
+  - Filtros em barra compacta com pills-dropdown (estilo "Agrupar por"): Nome, Período, Tipo, Status, Categorias/subcategorias, Tags, Contas, Cartões — cada pill abre um popover com campo de busca interno e chips removíveis para os itens selecionados
+  - Botão "Gerar" processa a consulta; resultado em tabela paginada (com seletor de itens por página, igual à tela de Lançamentos) e total geral no rodapé
+  - Exportação para **CSV** (separador `;`, vírgula decimal, com BOM UTF-8) e para **PDF** (abre aba de impressão formatada, aciona `window.print()` automaticamente)
+- **Indicador "Saúde financeira"** no Dashboard: gauge circular com gradiente (verde/dourado/vermelho conforme a faixa), pontuação 0–100 em destaque, badge de status (Saudável/Atenção/Crítica) com texto explicativo contextual, e botão "?" que abre um detalhamento da composição do score (poupança do mês, aderência ao orçamento, diversificação de investimentos)
+- **Indicador circular de utilização do orçamento** no card "Orçamento do mês": donut vermelho/cinza com percentual central, "Gasto no mês"/"Disponível" lado a lado, reflete o tipo selecionado (Despesas/Receitas/Investimentos) com cor e rótulos dinâmicos por tipo
+- **Combolist** para trocar o tipo em "Orçamento do mês" e "Últimos lançamentos" (substituindo os antigos pills), com cores de ícone vivas
+- **Menu do botão "+"**: ao clicar, sobe uma lista de pills circulares flutuantes (Receita/Despesa/Transferência), cada uma com cor do seu tema e fundo escuro; fecha ao clicar fora
+- **Categorização assistida**: ao digitar um nome já usado antes no formulário de lançamento, aparece um chip de sugestão de categoria com botão "Usar"
+- **Backup manual**: em Configurações → Arquivo Base, novo card "Gestão de dados" com data do último backup e botão de exportação
+- Tela de **Lançamentos**: 4 novos KPIs clicáveis no topo (Receitas, Despesas, Transferências, Investimentos), no mesmo modelo visual do Dashboard — clicar filtra a lista, clicar novamente desfaz o filtro
+- Slogan do sistema abaixo de "Bem-vindo, [nome]"
+
+### Changed
+- **Formulário de Lançamento reestruturado**: pills de tipo removidas (tipo agora é escolhido no menu do "+"); faixa colorida no topo do modal (cor do tipo); título passa a ser "Novo/Editar lançamento - Despesa/Receita/Transferência/Investimento"; cantos do modal mais arredondados; botão "Salvar" com ícone; botão "Excluir" com fundo vermelho escuro, ícone de lixeira e hover mais escuro; menu de 3 pontinhos removido em favor de um botão "Duplicar" direto no rodapé; modal fecha ao clicar fora (com proteção contra fechar acidentalmente ao soltar uma seleção de texto fora da área)
+- **Dashboard reorganizado**: KPI "Saldo inicial" removido; "Saldo atual" mostra a variação em R$ no mês; "Rentabilidade no mês" incorporada ao texto de "Investido no mês"; "Fluxo de caixa" removido; "Top categorias de despesa" com gráfico maior, "Total de despesas" no centro e categoria selecionada exibida no canto superior direito (com posição do gráfico agora estável entre estados); "Variação de Categorias" convertida em comparativo de barras verticais emparelhadas (mês atual x mês anterior) com legenda no topo à direita, em paleta azul-marinho; "Cartões de Crédito" com fontes maiores (exceto valor da fatura); alturas de "Top categorias", "Metas" e "Contas" igualadas à maior entre as três; barras de progresso de Orçamento e Metas padronizadas (mais altas, com gradiente e bordas arredondadas)
+- KPI "Investido no mês" agora desconta os resgates dos aportes (valor líquido), ficando vermelho se negativo
+- Ícones das duas primeiras linhas de KPI com cor mais clara (mantendo o fundo)
+- Barra de busca global mais larga e com bordas em pill; botões de notificação/ocultar valores redondos
+- Modo com valores ocultos preserva os separadores de milhar/decimal, ocultando somente os dígitos
+- Modo escuro rebalanceado para tom mais neutro/preto; elementos que ficavam ilegíveis no escuro (barras de "Variação", ícones dos dois primeiros KPIs) agora se adaptam automaticamente ao tema; fundo e textos do formulário de lançamento passaram a respeitar o tema escuro corretamente
+
+### Fixed
+- Corrigido bug em que estilos inline aplicados via JavaScript sobrescreviam o CSS de tamanho dos ícones do topo (impedia a redução/aumento desses ícones)
+- Corrigido cálculo da barra "Total despesas" duplicando informação já presente no novo indicador circular do orçamento (removida a barra redundante)
+- Corrigido posicionamento inconsistente do gráfico de "Top categorias" entre os estados normal/drill-down/categoria-selecionada (causado por quebra de linha do título quando havia pouco espaço)
+
 ## [1.7.045] - 2026-09-04
 
 Novo ciclo de versionamento (`1.7.000` em diante). Foco desta rodada: barra de topo unificada, redesenho abrangente dos KPIs do Dashboard, correções de alinhamento no formulário de Lançamento, e padronização de ícones.

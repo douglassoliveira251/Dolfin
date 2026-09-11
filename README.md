@@ -28,16 +28,17 @@ https://<seu-usuario>.github.io/<nome-do-repo>/
 
 ## Funcionalidades
 
-- **Lançamentos**: entradas, despesas, transferências, com suporte a recorrência (fixa mensal ou parcelada), despesas de cartão de crédito, e **divisão de um lançamento em múltiplas categorias** com valores individuais.
+- **Lançamentos**: entradas, despesas, transferências, com suporte a recorrência (fixa mensal ou parcelada), despesas de cartão de crédito, **divisão de um lançamento em múltiplas categorias** com valores individuais, e sugestão automática de categoria com base no histórico de nomes.
 - **Contas e Cartões de Crédito**: controle de saldo, faturas por competência, pagamento de fatura, limite, arquivamento.
 - **Categorias**: hierarquia categoria/subcategoria, com ícones e cores personalizáveis, e opção de arquivar ou excluir (com aviso de impacto no histórico).
-- **Orçamento**: planejamento mensal por categoria, comparado ao realizado, com saldo previsto considerando também aportes de investimento.
+- **Orçamento**: planejamento mensal por categoria, comparado ao realizado, com saldo previsto considerando também aportes de investimento, e indicador circular de utilização no Dashboard.
 - **Metas**: acompanhamento de objetivos financeiros com histórico de lançamentos vinculados.
 - **Investimentos**: ativos, aportes, resgates e atualizações de valor, com extrato mensal e rentabilidade projetada.
 - **Tags**: marcação livre de lançamentos, com contagem de uso e remoção rápida no formulário.
-- **Dashboard**: KPIs, gráfico de fluxo de caixa com saldo acumulado, comparativo com o mês anterior, variação por categoria, últimas transações.
+- **Relatórios**: consultas avançadas com filtros combináveis (período, tipo, categorias, tags, contas, cartões, status), exportação para CSV e PDF.
+- **Dashboard**: KPIs, indicador de Saúde Financeira (score 0–100 com gauge), comparativo com o mês anterior, gráfico de variação por categoria, últimas transações.
 - **Menu lateral colapsável** e barra de topo unificada (navegação de mês, busca global, notificações, perfil).
-- **Modo escuro** e paleta de identidade visual própria (navy/teal).
+- **Modo escuro** e paleta de identidade visual própria (navy/teal), com adaptação automática de elementos que dependem de contraste.
 
 ## Arquitetura
 
@@ -80,7 +81,7 @@ Esse arquivo nunca é versionado neste repositório — é pessoal e fica só no
 Este projeto segue um changelog manual em [`CHANGELOG.md`](./CHANGELOG.md), com uma entrada por versão publicada. A partir do ciclo `1.6`, o esquema de versão é `X.Y.NNN`, onde `NNN` é o total acumulado de alterações individuais desde o início daquele ciclo (não incrementa 1 por rodada — soma a quantidade de mudanças feitas). Cada versão relevante deve receber uma tag Git correspondente:
 
 ```bash
-git tag v1.7.045
+git tag v1.8.161
 git push --tags
 ```
 
