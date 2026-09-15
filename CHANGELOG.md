@@ -18,6 +18,37 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 # Release
 
+## [1.9.053] - 2026-09-15
+
+Novo ciclo de versionamento (`1.9.000` em diante), focado principalmente em **compatibilidade completa com o modo escuro** em todo o aplicativo, redesenho de componentes de navegação por tipo, e uma bateria extensa de correções de bugs — incluindo dois bugs reais e significativos na lógica de orçamento recorrente que passavam despercebidos desde a implementação original.
+
+### Added
+- **Filtro por tipo** ("Receitas/Despesas/Transferências/Investimentos") na tela de Lançamentos: 4 KPIs clicáveis no topo, no mesmo modelo visual do Dashboard — clicar filtra a lista, clicar de novo desfaz o filtro; um segundo mecanismo (dropdown "Tipo", primeiro item da barra "Filtrar por:") complementa o filtro por clique
+- **Categorias**: nova opção "Ocultar dos gráficos do Dashboard" — a categoria some do "Top categorias" e da "Variação de Categorias", mas continua somada normalmente nos KPIs e totais gerais
+- **Orçamento**: gráfico "Evolução mensal" ganhou uma segunda linha (tracejada) mostrando a meta definida em cada um dos últimos 6 meses, sem entrar no cálculo da média (que continua baseada só no consumo realizado)
+- **Orçamento**: terceira opção de exclusão — "Todos os meses (remover por completo)", que apaga o registro inteiro (inclusive de meses passados), complementando as opções já existentes de "somente este mês" e "este e os seguintes"
+- **Orçamento**: botão para remover a subcategoria selecionada sem precisar reabrir o seletor
+- **Tags**: edição do nome diretamente na linha (inline), sem precisar abrir modal
+- Slogan do sistema abaixo de "Bem-vindo, [nome]"
+
+### Changed
+- Botões de seleção de tipo (Receitas/Despesas/Investimentos) redesenhados como segmented control moderno (pills com fundo colorido no item ativo) nas telas de Orçamento e Categorias
+- Dropdown de notificações reescrito do zero: cards com ícone circular colorido, cores baseadas em variáveis de tema (antes usava hex fixos que ficavam ilegíveis no modo escuro)
+- Botão "Excluir" no formulário de Lançamento com fundo vermelho escuro, ícone de lixeira e hover mais escuro; menu de opções substituído por um botão "Duplicar" direto
+- Ícones dos KPIs recalculados via JavaScript (não mais só CSS) para refletir o tema corretamente em qualquer contexto
+- Botão "Pagar Fatura" com ícone de confirmação; título e badge de status da fatura agora alinhados na mesma linha de base
+- Gráfico "Resultado do mês" agora ajusta sua largura automaticamente conforme a barra lateral é expandida ou recolhida
+
+### Fixed
+- **Bug real no orçamento recorrente**: ao editar um orçamento e escolher "deste mês em diante", o campo de fallback (`valorPlanejado`) era sobrescrito com o novo valor, contaminando os meses *anteriores* à edição, que deveriam manter o valor antigo
+- **Bug real no orçamento recorrente**: reabrir o formulário de edição mostrava o valor histórico mais antigo em vez do valor vigente no mês atual, levando a reversões acidentais ao salvar sem querer alterar nada
+- **Bug real de dados**: a função de normalização do estado descartava silenciosamente o campo `ocultarGraficos` das categorias ao carregar, revertendo a preferência a cada nova sessão
+- **Bug real de CSS**: uma regra esquecida de um ciclo anterior aplicava um filtro de escurecimento (`brightness(.32)`) a qualquer ícone de KPI no modo escuro, cancelando silenciosamente qualquer ajuste de cor feito nas rodadas seguintes — a causa raiz de uma sequência de idas e vindas na paleta de cores dos KPIs até ser finalmente identificada
+- **Bug real de CSS**: a correção de contraste dos cartões de crédito no modo escuro usava o mesmo pseudo-elemento (`::before`) que o indicador visual de "cartão preferencial", fazendo esse indicador desaparecer sempre que o modo escuro estava ativo
+- Pontos do gráfico "Evolução mensal" apareciam ovais em vez de circulares — causado pelo SVG esticar o eixo X de forma não uniforme em relação ao eixo Y; corrigido usando marcadores em HTML sobrepostos ao SVG em vez de elementos `<circle>` internos
+- Textos de categoria/subcategoria/conta/cartão selecionados, ícone da calculadora e ícone nativo de campos de data ilegíveis (pretos ou muito escuros) no modo escuro
+- Fundo do formulário de lançamento no modo escuro não acompanhava o tema geral do sistema
+
 ## [1.8.161] - 2026-09-11
 
 Ciclo extenso de refinamento visual e funcional do Dashboard, Relatórios, formulário de Lançamento e tela de Lançamentos. Este release consolida dezenas de rodadas de ajuste fino de layout, uma nova página de Relatórios com filtros avançados, um indicador de Saúde Financeira, e uma reestruturação completa do formulário de lançamento.

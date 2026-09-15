@@ -62,18 +62,13 @@ body.dark-theme .sidebar{ background:var(--sidebar-bg); }
 body.dark-theme .lanc-modal{ background:var(--bg); }
 body.dark-theme .lanc-modal .custom-select-trigger{ background:var(--bg); color:var(--ink); }
 body.dark-theme .lanc-modal .custom-select-trigger span{ color:var(--ink); }
-body.dark-theme .kpi-grid span[style*="background:#DFF0E4"]{ background:var(--positive) !important; color:#fff !important; }
-body.dark-theme .kpi-grid span[style*="background:#F5E0DC"]{ background:var(--negative) !important; color:#fff !important; }
-body.dark-theme .kpi-grid span[style*="background:#EDE3F5"]{ background:#7C3AED !important; color:#fff !important; }
-body.dark-theme .kpi-grid span[style*="background:#DCE7F1"]{ background:var(--type-investimento) !important; color:#fff !important; }
-body.dark-theme .kpi-card span[style*="background:#D"],
-body.dark-theme .kpi-card span[style*="background:#E"],
-body.dark-theme .kpi-card span[style*="background:#F"],
-body.dark-theme .card span[style*="background:#D"],
-body.dark-theme .card span[style*="background:#E"],
-body.dark-theme .card span[style*="background:#F"]{
-  filter:brightness(.32) saturate(1.15);
-}
+body.dark-theme .custom-select-trigger{ color:var(--ink); }
+body.dark-theme .custom-select-trigger span{ color:var(--ink); }
+body.dark-theme .dash-cartao-mini{ box-shadow: inset 0 0 0 1000px rgba(0,0,0,.38); }
+body.dark-theme input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-theme input[type="month"]::-webkit-calendar-picker-indicator,
+body.dark-theme input[type="datetime-local"]::-webkit-calendar-picker-indicator{ filter:invert(1); }
+body.dark-theme #donutSvg{ filter:brightness(.68); }
 *{box-sizing:border-box;}
 html,body{height:100%;}
 body{
@@ -636,7 +631,7 @@ label.field.field-error input,label.field.field-error select,label.field.field-e
         <div style="position:relative;">
           <button id="btnAlertasSino" class="icon-btn icon-btn-topbar" title="Alertas"></button>
           <span id="sinoAlertaDot" style="display:none;position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:50%;background:var(--positive);border:2px solid var(--surface);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;"></span>
-          <div id="sinoAlertasDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:400px;max-height:440px;overflow-y:auto;background:var(--surface);border-radius:var(--radius-sm);box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:60;padding:10px;"></div>
+          <div id="sinoAlertasDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:400px;max-height:440px;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.18);z-index:60;padding:10px;"></div>
         </div>
         <button id="btnToggleValoresVisiveis" class="icon-btn icon-btn-topbar" title="Ocultar valores"></button>
         <div style="position:relative;">
@@ -794,7 +789,7 @@ function normalizeState(raw){
     id:c.id||uid("cat"), nome:c.nome||"Categoria", tipo:c.tipo||"despesa",
     categoriaPaiId:c.categoriaPaiId||null, cor:c.cor||"#9C978A",
     icone: c.icone || (c.tipo==="conta" ? "bank" : null),
-    arquivada: c.arquivada===true
+    arquivada: c.arquivada===true, ocultarGraficos: c.ocultarGraficos===true
   })) : [];
   // Migração: categoria de aportes de orçamento renomeada de "Aportes (orçamento)" para "Aportes"
   out.categorias.forEach(c=>{ if(c.tipo==="investimento" && !c.categoriaPaiId && c.nome==="Aportes (orçamento)") c.nome="Aportes"; });
@@ -1324,6 +1319,10 @@ function round2(v){
 function ehNegativo(v){
   const n = round2(v);
   return n < 0;
+}
+function kpiIconStyle(bgClaro, corClara, bgEscuro){
+  const escuro = !!(state.configuracoes && state.configuracoes.temaEscuro);
+  return escuro ? `background:color-mix(in srgb, ${bgEscuro} 60%, black);color:#F5F5F5;` : `background:${bgClaro};color:${corClara};`;
 }
 function fmtMoney(v){
   let n = round2(v);
@@ -2378,19 +2377,21 @@ function renderSinoDropdown(){
   const a = computarAlertasGlobais();
   const {hojeStr, despesasPendentes, entradasPendentes, transferenciasPendentes, faturasPendentes} = a;
   const total = despesasPendentes.length + entradasPendentes.length + transferenciasPendentes.length + faturasPendentes.length;
-  if(!total){ wrap.innerHTML = `<div style="padding:10px;">${emptyState("Nenhum alerta ativo no momento.")}</div>`; return; }
+  if(!total){ wrap.innerHTML = `<div style="padding:24px 10px;">${emptyState("Nenhum alerta ativo no momento.")}</div>`; return; }
   function badgeSituacao(situacaoData){
-    return situacaoData < hojeStr ? `<span style="color:var(--negative);font-size:10.5px;font-weight:700;white-space:nowrap;">Vencida</span>`
-      : situacaoData===hojeStr ? `<span style="color:var(--gold);font-size:10.5px;font-weight:700;white-space:nowrap;">Hoje</span>`
-      : `<span style="color:#9C978A;font-size:10.5px;white-space:nowrap;">${fmtDate(situacaoData)}</span>`;
+    return situacaoData < hojeStr ? `<span style="color:var(--negative);font-size:11px;font-weight:700;white-space:nowrap;">Vencida</span>`
+      : situacaoData===hojeStr ? `<span style="color:var(--gold);font-size:11px;font-weight:700;white-space:nowrap;">Hoje</span>`
+      : `<span class="mini-note" style="white-space:nowrap;">${fmtDate(situacaoData)}</span>`;
   }
   function itemLanc(l, cor, tipo){
     const cat = l.categoriasIds && l.categoriasIds[0] ? categoriaById(l.categoriasIds[0]) : null;
-    return `<div class="sino-item" data-tipo="${tipo}" data-id="${l.id}" style="display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:pointer;border-radius:6px;border:1.5px solid transparent;border-left:4px solid ${cor};">
-      ${cat?catCircleHtml(cat):""}
-      <span style="flex:1;font-size:12px;color:#20241F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.nome||"—"}</span>
-      <span style="font-size:12px;font-weight:700;color:#20241F;white-space:nowrap;">${fmtMoney(l.valor)}</span>
-      ${badgeSituacao(l.data)}
+    return `<div class="sino-item" data-tipo="${tipo}" data-id="${l.id}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;cursor:pointer;border-radius:10px;">
+      <span style="width:34px;height:34px;border-radius:10px;background:color-mix(in srgb, ${cor} 16%, var(--surface));color:${cor};display:flex;align-items:center;justify-content:center;flex:none;">${cat?catCircleHtml(cat):`<span class="tt-icon" style="width:16px;height:16px;">${ICONS.kpiArrowUp}</span>`}</span>
+      <span style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.nome||"—"}</div>
+        <div style="margin-top:1px;">${badgeSituacao(l.data)}</div>
+      </span>
+      <span style="font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;flex:none;">${fmtMoney(l.valor)}</span>
     </div>`;
   }
   function secao(titulo, itens, cor, tipo, verMaisTipo){
@@ -2398,18 +2399,23 @@ function renderSinoDropdown(){
     const LIMITE = 4;
     const mostrar = itens.slice(0, LIMITE);
     const resto = itens.length - mostrar.length;
-    return `<div style="margin-bottom:10px;">
-      <div style="margin-bottom:2px;text-transform:uppercase;letter-spacing:1px;font-size:10px;color:#9C978A;padding:0 6px;">${titulo} (${itens.length})</div>
-      ${mostrar.map(l=> tipo==="faturas" ? `<div class="sino-item" data-tipo="faturas" data-cartao="${l.cartao.id}" data-mes="${l.mesKeyRef}" style="display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:pointer;border-radius:6px;border:1.5px solid transparent;border-left:4px solid ${cor};">
-          ${entityCircleHtml(l.cartao.cor,l.cartao.icone)}
-          <span style="flex:1;font-size:12px;color:#20241F;">${l.cartao.nome}</span>
-          <span style="font-size:12px;font-weight:700;color:#20241F;white-space:nowrap;">${fmtMoney(l.total)}</span>
-          ${badgeSituacao(l.data)}
+    return `<div style="margin-bottom:8px;">
+      <div class="mini-note" style="margin-bottom:2px;font-weight:600;padding:0 10px;">${titulo} · ${itens.length}</div>
+      ${mostrar.map(l=> tipo==="faturas" ? `<div class="sino-item" data-tipo="faturas" data-cartao="${l.cartao.id}" data-mes="${l.mesKeyRef}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;cursor:pointer;border-radius:10px;">
+          <span style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden;">${entityCircleHtml(l.cartao.cor,l.cartao.icone)}</span>
+          <span style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.cartao.nome}</div>
+            <div style="margin-top:1px;">${badgeSituacao(l.data)}</div>
+          </span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;flex:none;">${fmtMoney(l.total)}</span>
         </div>` : itemLanc(l, cor, tipo)).join("")}
-      ${resto>0 ? `<div class="sino-vermais" data-vermais="${verMaisTipo}" style="padding:6px 6px 2px;font-size:11px;color:var(--sidebar-accent);cursor:pointer;font-weight:600;">+ ${resto} mais</div>` : ""}
+      ${resto>0 ? `<div class="sino-vermais" data-vermais="${verMaisTipo}" style="padding:7px 10px 2px;font-size:12px;color:var(--sidebar-accent);cursor:pointer;font-weight:600;">Ver mais ${resto}</div>` : ""}
     </div>`;
   }
-  wrap.innerHTML = `<div style="margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-size:10px;color:#9C978A;padding:0 6px;">Alertas · ${total} no total</div>
+  wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:2px 10px 10px;border-bottom:1px solid var(--line);">
+      <strong style="font-size:14px;color:var(--ink);">Notificações</strong>
+      <span class="mini-note" style="margin:0;">${total} no total</span>
+    </div>
     ${secao("Entradas pendentes", entradasPendentes, "var(--type-entrada)", "entradas", "entradas")}
     ${secao("Despesas pendentes", despesasPendentes, "var(--negative)", "despesas", "despesas")}
     ${secao("Transferências pendentes", transferenciasPendentes, "var(--gold)", "transferencias", "transferencias")}
@@ -2431,8 +2437,8 @@ function renderSinoDropdown(){
     }, 50);
   }
   wrap.querySelectorAll(".sino-item").forEach(el=>{
-    el.addEventListener("mouseenter", ()=>{ el.style.borderColor="#9C978A"; el.style.background="#F5F3EC"; });
-    el.addEventListener("mouseleave", ()=>{ el.style.borderColor="transparent"; el.style.background="transparent"; });
+    el.addEventListener("mouseenter", ()=>{ el.style.background="var(--surface-2)"; });
+    el.addEventListener("mouseleave", ()=>{ el.style.background="transparent"; });
     el.addEventListener("click", ()=>{
       const tipo = el.dataset.tipo;
       if(tipo==="faturas"){
@@ -2630,12 +2636,13 @@ function fmtMoneyShort(v){
   if(abs>=1000) return (v<0?'-':'')+'R$ '+(abs/1000).toFixed(abs%1000===0?0:1).replace('.',',')+'k';
   return 'R$ '+v.toFixed(0);
 }
-function historicoConsumoChartSvg(meses, w, h, cor){
+function historicoConsumoChartSvg(meses, w, h, cor, metas){
   cor = cor || "var(--type-despesa)";
   const padL = 46, padR = 8, padT = 10, padB = 20;
   const plotW = w - padL - padR, plotH = h - padT - padB;
   const vals = meses.map(m=>m.valor);
-  let min = 0, max = Math.max(...vals, 1);
+  const valsTodos = metas ? vals.concat(metas.filter(v=>v!=null)) : vals;
+  let min = 0, max = Math.max(...valsTodos, 1);
   const range = (max-min) || 1;
   const n = meses.length;
   const stepX = n>1 ? plotW/(n-1) : 0;
@@ -2648,16 +2655,34 @@ function historicoConsumoChartSvg(meses, w, h, cor){
     const cx = (x0+x1)/2;
     path += ` C${cx.toFixed(1)},${y0.toFixed(1)} ${cx.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
   }
-  const dots = meses.map((m,i)=> `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(m.valor).toFixed(1)}" r="2.5" fill="var(--surface)" stroke="${cor}" stroke-width="1.8"/>`).join("");
+  // Pontos como overlay HTML (%) para não sofrerem distorção do preserveAspectRatio="none" do SVG (que estica só o eixo X)
+  const dotsHtml = meses.map((m,i)=>{
+    const xPct = (xFor(i)/w*100).toFixed(2), yPct = (yFor(m.valor)/h*100).toFixed(2);
+    return `<span style="position:absolute;left:${xPct}%;top:${yPct}%;width:6px;height:6px;border-radius:50%;background:var(--surface);border:1.6px solid ${cor};transform:translate(-50%,-50%);box-sizing:border-box;"></span>`;
+  }).join("");
+  let metaPath = "", metaDotsHtml = "";
+  if(metas && metas.some(v=>v!=null)){
+    const ptsMeta = metas.map((v,i)=> v!=null ? [xFor(i), yFor(v)] : null);
+    ptsMeta.forEach((p)=>{
+      if(!p) return;
+      metaPath += (metaPath==="" ? `M${p[0].toFixed(1)},${p[1].toFixed(1)}` : ` L${p[0].toFixed(1)},${p[1].toFixed(1)}`);
+    });
+    metaDotsHtml = metas.map((v,i)=>{
+      if(v==null) return "";
+      const xPct = (xFor(i)/w*100).toFixed(2), yPct = (yFor(v)/h*100).toFixed(2);
+      return `<span style="position:absolute;left:${xPct}%;top:${yPct}%;width:5px;height:5px;border-radius:50%;background:var(--gray-400);transform:translate(-50%,-50%);"></span>`;
+    }).join("");
+  }
   const gridLine = `<line x1="${padL}" y1="${yFor(max).toFixed(1)}" x2="${w-padR}" y2="${yFor(max).toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>
     <text x="${padL-6}" y="${(yFor(max)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--gray-400)">${fmtMoneyShort(max)}</text>`;
   const xLabels = meses.map((m,i)=> `<text x="${xFor(i).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="9" fill="var(--gray-400)">${m.label}</text>`).join("");
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" style="overflow:visible;">
+  const svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" style="overflow:visible;display:block;">
     ${gridLine}
+    ${metaPath ? `<path d="${metaPath}" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
     <path d="${path}" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    ${dots}
     ${xLabels}
   </svg>`;
+  return `<div style="position:relative;width:100%;height:${h}px;">${svg}${dotsHtml}${metaDotsHtml}</div>`;
 }
 function kpiCardHtml({label, value, valueColor, subNote, iconKey, iconBg, iconColor, extra, dataAttrs, clickable, compact}){
   return `<div class="kpi-card ${compact?'compact':''}" ${dataAttrs||""} style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;${clickable?'cursor:pointer;':''}">
@@ -2674,7 +2699,7 @@ function kpiCardHtml({label, value, valueColor, subNote, iconKey, iconBg, iconCo
 }
 function renderDashboard(root){
   const perfilNomeHeader = (state.perfil && state.perfil.nome) ? state.perfil.nome.split(" ")[0] : "";
-  setPageHeader(perfilNomeHeader ? `<span style="font-family:var(--font-display);font-size:26px;letter-spacing:.2px;"><strong style="color:var(--ink);font-weight:600;">Bem-vindo,</strong> <span style="color:var(--gray-400);font-weight:400;">${perfilNomeHeader}</span></span>` : `<span style="font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:.2px;">Bem-vindo</span>`, "Organize hoje, conquiste seus objetivos amanhã");
+  setPageHeader(perfilNomeHeader ? `<span style="font-family:var(--font-display);font-size:26px;letter-spacing:.2px;"><strong style="color:var(--ink);font-weight:600;">Bem-vindo,</strong> <span style="color:var(--gray-400);font-weight:400;">${perfilNomeHeader}</span></span>` : `<span style="font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:.2px;">Bem-vindo</span>`, "Seu controle financeiro, do seu jeito");
   let fluxoPontosParaTooltip = [];
   const {saldoInicial, saldoAtual, saldoPrevisto} = dashboardSaldos(currentMonth);
   const lancMes = lancamentosDoMes(currentMonth);
@@ -2726,9 +2751,13 @@ function renderDashboard(root){
       if(donutCategoriaAtiva){
         if(parte.categoriaId!==donutCategoriaAtiva) return;
         const cid = parte.subcategoriaId || "__sem__";
+        const catCheck = parte.subcategoriaId ? categoriaById(parte.subcategoriaId) : null;
+        if(catCheck && catCheck.ocultarGraficos) return;
         catTotais[cid] = (catTotais[cid]||0) + parte.valor;
       } else {
         const cid = parte.categoriaId || "__sem__";
+        const catCheck = parte.categoriaId ? categoriaById(parte.categoriaId) : null;
+        if(catCheck && catCheck.ocultarGraficos) return;
         catTotais[cid] = (catTotais[cid]||0) + parte.valor;
       }
     });
@@ -2763,7 +2792,7 @@ function renderDashboard(root){
     const delta = atual-anterior;
     const pct = anterior>0 ? (delta/anterior*100) : (atual>0?100:0);
     return {cat, nome: cat?cat.nome:"Sem categoria", atual, anterior, delta, pct};
-  }).filter(l=> (l.atual>0 || l.anterior>0) && !(l.cat && l.cat.nome.trim().toLowerCase()==="outros")).sort((a,b)=> Math.abs(b.pct)-Math.abs(a.pct));
+  }).filter(l=> (l.atual>0 || l.anterior>0) && !(l.cat && l.cat.nome.trim().toLowerCase()==="outros") && !(l.cat && l.cat.ocultarGraficos)).sort((a,b)=> Math.abs(b.pct)-Math.abs(a.pct));
   const LIMITE_COMPARATIVO = 8;
   const comparativoLinhas = comparativoLinhasTodas.slice(0, LIMITE_COMPARATIVO);
   const totalAtualComp = despesas + despesasPrevisto;
@@ -2793,7 +2822,7 @@ function renderDashboard(root){
     <div class="kpi-grid cols3" style="margin-bottom:0;">
       <div class="kpi-card" style="position:relative;overflow:hidden;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#DFF0E4;color:color-mix(in srgb, var(--positive) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DFF0E4","var(--positive)","#16A34A")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiPulse}</span>
           </span>
           <div style="min-width:0;">
@@ -2805,7 +2834,7 @@ function renderDashboard(root){
       </div>
       <div class="kpi-card" id="nodeSaldoPrevisto" style="position:relative;overflow:hidden;cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#F5E0DC;color:color-mix(in srgb, var(--negative) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#F5E0DC","var(--negative)","#DC2626")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiWallet}</span>
           </span>
           <div style="min-width:0;">
@@ -2822,9 +2851,10 @@ function renderDashboard(root){
       ${(()=>{
         const resultadoMes = receitas - despesas;
         const pctReceita = receitas>0 ? (resultadoMes/receitas*100) : 0;
+        const larguraGraficoResultado = sidebarColapsada ? 150 : 105;
         return `<div class="kpi-card" style="position:relative;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:14px;">
-            <span style="width:36px;height:36px;border-radius:11px;background:#EDE3F5;color:color-mix(in srgb, var(--type-investimento) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+            <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#EDE3F5","var(--type-investimento)","#7C3AED")}display:flex;align-items:center;justify-content:center;flex:none;">
               <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiCoin}</span>
             </span>
             <div style="min-width:0;">
@@ -2832,15 +2862,15 @@ function renderDashboard(root){
               <div class="val" style="color:${ehNegativo(resultadoMes)?'var(--negative)':'var(--positive)'};margin-top:1px;">${fmtMoney(resultadoMes)}</div>
             </div>
           </div>
-          <div style="margin-top:4px;margin-left:50px;font-size:11.5px;font-weight:600;color:${pctReceita>=0?'var(--positive)':'var(--negative)'};">${pctReceita>=0?'▲':'▼'} ${Math.abs(pctReceita).toFixed(1)}% <span class="mini-note" style="font-weight:400;">da receita</span></div>
-          <div style="position:absolute;top:0;right:0;bottom:0;width:100px;">${sparklineSvg(resultadoHistorico, 90, 40, ehNegativo(resultadoMes)?'#AD4B34':'#2E7D5B')}</div>
+          <div style="margin-top:4px;margin-left:50px;max-width:calc(100% - ${larguraGraficoResultado+2}px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11.5px;font-weight:600;color:${pctReceita>=0?'var(--positive)':'var(--negative)'};">${pctReceita>=0?'▲':'▼'} ${Math.abs(pctReceita).toFixed(1)}% <span class="mini-note" style="font-weight:400;">da receita</span></div>
+          <div style="position:absolute;top:0;right:0;bottom:0;width:${larguraGraficoResultado}px;">${sparklineSvg(resultadoHistorico, 90, 40, ehNegativo(resultadoMes)?'#AD4B34':'#2E7D5B')}</div>
         </div>`;
       })()}
     </div>
     <div class="kpi-grid cols4" style="margin-bottom:0;">
       <div class="kpi-card" data-kpi-extrato="entrada" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#DFF0E4;color:color-mix(in srgb, var(--positive) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DFF0E4","var(--positive)","#16A34A")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiArrowDown}</span>
           </span>
           <div style="min-width:0;">
@@ -2852,7 +2882,7 @@ function renderDashboard(root){
       </div>
       <div class="kpi-card" data-kpi-extrato="despesa" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#F5E0DC;color:color-mix(in srgb, var(--negative) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#F5E0DC","var(--negative)","#DC2626")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiArrowUp}</span>
           </span>
           <div style="min-width:0;">
@@ -2864,7 +2894,7 @@ function renderDashboard(root){
       </div>
       <div class="kpi-card">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#DFF0E4;color:color-mix(in srgb, var(--positive) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DFF0E4","var(--positive)","#16A34A")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiClock}</span>
           </span>
           <div style="min-width:0;">
@@ -2879,7 +2909,7 @@ function renderDashboard(root){
         const variacaoPatrimonioPct = patrimonioMesAnterior!==0 ? ((patrimonioInvestido-patrimonioMesAnterior)/Math.abs(patrimonioMesAnterior)*100) : (patrimonioInvestido!==0?100:0);
         return `<div class="kpi-card">
           <div style="display:flex;align-items:center;gap:14px;">
-            <span style="width:36px;height:36px;border-radius:11px;background:#DCE7F1;color:color-mix(in srgb, var(--type-investimento) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+            <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DCE7F1","var(--type-investimento)","#2563EB")}display:flex;align-items:center;justify-content:center;flex:none;">
               <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiTrend}</span>
             </span>
             <div style="min-width:0;">
@@ -2956,7 +2986,7 @@ function renderDashboard(root){
       <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px;">
         <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;overflow:hidden;">
-          <span style="width:24px;height:24px;color:var(--sidebar-bg);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:24px;height:24px;color:var(--logo-teal);display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:24px;height:24px;">${ICONS.categorias}</span>
           </span>
           <div style="min-width:0;overflow:hidden;">
@@ -3243,7 +3273,7 @@ function renderDashboard(root){
           const corSuaveBtnDash = corTexto==="#FFFFFF" ? "rgba(255,255,255,.22)" : "rgba(0,0,0,.10)";
           const bandeiraKey = c.bandeira||'outros';
           const bandeiraIcon = CATEGORY_ICON_SVGS[`bandeira${bandeiraKey.charAt(0).toUpperCase()}${bandeiraKey.slice(1)}Mono`] || CATEGORY_ICON_SVGS.bandeiraOutrosMono;
-          return `<div data-extrato-cartao="${c.id}" data-mes="${monthKey(mesRefFatura)}" style="cursor:pointer;background:${c.cor};color:${corTexto};border-radius:12px;padding:16px 18px;margin-bottom:10px;">
+          return `<div class="dash-cartao-mini" data-extrato-cartao="${c.id}" data-mes="${monthKey(mesRefFatura)}" style="cursor:pointer;background:${c.cor};color:${corTexto};border-radius:12px;padding:16px 18px;margin-bottom:10px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;">
               <div style="display:flex;align-items:center;gap:8px;min-width:0;">
                 <span style="width:26px;height:15px;display:inline-flex;align-items:center;flex:none;color:${corTexto};">${bandeiraIcon}</span>
@@ -3595,13 +3625,13 @@ function renderLancamentos(root){
   const catFiltroAtual = lancFiltro.categoriaId ? categoriaById(lancFiltro.categoriaId) : null;
 
   root.innerHTML = `
-    <div class="view-header">
+    <div class="view-header" style="margin-bottom:2px;">
       ${pageTitleHtml("Lançamentos","Suas entradas, despesas e transferências")}
     </div>
     <div class="kpi-grid cols4" style="margin-bottom:16px;">
-      <div class="kpi-card" data-lanc-kpi="entrada" style="cursor:pointer;${lancFiltro.tipo==='entrada'?'outline:2px solid var(--positive);outline-offset:-1px;':''}">
+      <div class="kpi-card" data-lanc-kpi="entrada" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#DFF0E4;color:color-mix(in srgb, var(--positive) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DFF0E4","var(--positive)","#16A34A")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiArrowDown}</span>
           </span>
           <div style="min-width:0;">
@@ -3611,9 +3641,9 @@ function renderLancamentos(root){
         </div>
         <div class="mini-note" style="margin-top:4px;margin-left:50px;">Previsto: <span style="color:var(--positive);font-weight:500;">${fmtMoney(kpiReceitasEfetivado+kpiReceitasPrevisto)}</span></div>
       </div>
-      <div class="kpi-card" data-lanc-kpi="despesa" style="cursor:pointer;${lancFiltro.tipo==='despesa'?'outline:2px solid var(--negative);outline-offset:-1px;':''}">
+      <div class="kpi-card" data-lanc-kpi="despesa" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#F5E0DC;color:color-mix(in srgb, var(--negative) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#F5E0DC","var(--negative)","#DC2626")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiArrowUp}</span>
           </span>
           <div style="min-width:0;">
@@ -3623,9 +3653,9 @@ function renderLancamentos(root){
         </div>
         <div class="mini-note" style="margin-top:4px;margin-left:50px;">Previsto: <span style="color:var(--negative);font-weight:500;">${fmtMoney(kpiDespesasEfetivado+kpiDespesasPrevisto)}</span></div>
       </div>
-      <div class="kpi-card" data-lanc-kpi="transferencia" style="cursor:pointer;${lancFiltro.tipo==='transferencia'?'outline:2px solid var(--type-transferencia);outline-offset:-1px;':''}">
+      <div class="kpi-card" data-lanc-kpi="transferencia" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#FAEEDA;color:color-mix(in srgb, var(--type-transferencia) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#FAEEDA","var(--type-transferencia)","#CA8A04")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.swap}</span>
           </span>
           <div style="min-width:0;">
@@ -3635,9 +3665,9 @@ function renderLancamentos(root){
         </div>
         <div class="mini-note" style="margin-top:4px;margin-left:50px;">${kpiTransferencias.length} movimentação${kpiTransferencias.length!==1?'ões':''}</div>
       </div>
-      <div class="kpi-card" data-lanc-kpi="investimento" style="cursor:pointer;${lancFiltro.tipo==='investimento'?'outline:2px solid var(--type-investimento);outline-offset:-1px;':''}">
+      <div class="kpi-card" data-lanc-kpi="investimento" style="cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <span style="width:36px;height:36px;border-radius:11px;background:#DCE7F1;color:color-mix(in srgb, var(--type-investimento) 60%, white);display:flex;align-items:center;justify-content:center;flex:none;">
+          <span style="width:36px;height:36px;border-radius:11px;${kpiIconStyle("#DCE7F1","var(--type-investimento)","#2563EB")}display:flex;align-items:center;justify-content:center;flex:none;">
             <span class="tt-icon" style="width:18px;height:18px;">${ICONS.kpiTrend}</span>
           </span>
           <div style="min-width:0;">
@@ -3650,13 +3680,24 @@ function renderLancamentos(root){
     </div>
     <div class="table-wrap">
       <div class="table-toolbar" style="justify-content:space-between;">
-        <div class="search-box" style="display:flex;align-items:center;gap:6px;flex:1;max-width:280px;padding:6px 8px;">
+        <div class="search-box" style="display:flex;align-items:center;gap:6px;flex:1;max-width:320px;height:38px;box-sizing:border-box;padding:0 10px;background:var(--surface-2);">
           <span class="tt-icon" style="color:var(--gray-400);flex:none;width:13px;height:13px;">${ICONS.search}</span>
-          <input type="text" id="fBuscaLanc" placeholder="Buscar por nome..." value="${lancBusca}" style="border:none;background:transparent;padding:3px 0;width:100%;outline:none;font-size:12.5px;">
+          <input type="text" id="fBuscaLanc" placeholder="Buscar por nome..." value="${lancBusca}" style="border:none;background:transparent;padding:0;width:100%;outline:none;font-size:12.5px;color:var(--ink);">
           ${lancBusca ? `<button type="button" id="btnLimparBuscaLanc" class="tt-icon" style="color:var(--gray-400);flex:none;width:13px;height:13px;cursor:pointer;background:none;border:none;padding:0;">${ICONS.close||'✕'}</button>` : ""}
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
         <span class="mini-note" style="margin:0;">Filtrar por:</span>
+        <div style="position:relative;display:inline-block;">
+          <button class="btn ghost small" id="btnFiltroTipo" style="display:flex;align-items:center;gap:6px;">
+            <span class="tt-icon" style="color:${lancFiltro.tipo==='entrada'?'var(--positive)':lancFiltro.tipo==='despesa'?'var(--negative)':lancFiltro.tipo==='transferencia'?'var(--type-transferencia)':lancFiltro.tipo==='investimento'?'var(--type-investimento)':'var(--ink-soft)'};">${lancFiltro.tipo==='entrada'?ICONS.kpiArrowDown:lancFiltro.tipo==='despesa'?ICONS.kpiArrowUp:lancFiltro.tipo==='transferencia'?ICONS.swap:lancFiltro.tipo==='investimento'?ICONS.kpiTrend:ICONS.dashboard}</span> Tipo${lancFiltro.tipo!=='todos'?': '+(tabs.find(t=>t.tipo===lancFiltro.tipo)?.label||''):''}
+          </button>
+          <div id="tipoFiltroPopover" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:6px;min-width:170px;">
+            ${tabs.map(t=>{
+              const cor = t.tipo==='entrada'?'var(--positive)':t.tipo==='despesa'?'var(--negative)':t.tipo==='transferencia'?'var(--type-transferencia)':t.tipo==='investimento'?'var(--type-investimento)':'var(--ink-soft)';
+              return `<button type="button" data-filtro-tipo="${t.tipo}" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:${lancFiltro.tipo===t.tipo?'var(--surface-2)':'none'};border-radius:7px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left;"><span class="tt-icon" style="width:15px;height:15px;color:${cor};">${ICONS[t.icon]}</span>${t.label}</button>`;
+            }).join("")}
+          </div>
+        </div>
         <button class="btn ghost small" id="btnFiltroConta" style="display:flex;align-items:center;gap:6px;">
           <span class="tt-icon">${ICONS.contas}</span> Contas${lancFiltro.contaId?': '+(contaById(lancFiltro.contaId)?.nome||''):''}
         </button>
@@ -3731,6 +3772,20 @@ function renderLancamentos(root){
     lancFiltro.tipo = lancFiltro.tipo===tipo ? "todos" : tipo;
     lancFiltro.categoriaId=""; lancPage=1; renderLancamentos(root);
   });
+  const btnFiltroTipo = document.getElementById("btnFiltroTipo");
+  if(btnFiltroTipo){
+    btnFiltroTipo.onclick = (e)=>{
+      e.stopPropagation();
+      const pop = document.getElementById("tipoFiltroPopover");
+      pop.style.display = pop.style.display==="block" ? "none" : "block";
+    };
+    document.addEventListener("click", ()=>{ const pop = document.getElementById("tipoFiltroPopover"); if(pop) pop.style.display="none"; }, {once:true});
+    document.querySelectorAll("[data-filtro-tipo]").forEach(b=> b.onclick = (e)=>{
+      e.stopPropagation();
+      lancFiltro.tipo = b.dataset.filtroTipo;
+      lancFiltro.categoriaId=""; lancPage=1; renderLancamentos(root);
+    });
+  }
   document.getElementById("btnFiltroConta").onclick = (e)=>{ e.stopPropagation(); openContaFiltroPopover(e.currentTarget, root); };
   const btnFiltroCat = document.getElementById("btnFiltroCategoria");
   if(btnFiltroCat) btnFiltroCat.onclick = (e)=>{ e.stopPropagation(); openCategoriaFiltroPopover(btnFiltroCat, root); };
@@ -3955,7 +4010,7 @@ function openLancamentoModal(id, monthCtx, presetTipo){
             <label class="field" id="lblValor"><span>Valor <span class="req-star">*</span></span>
               <div style="position:relative;display:flex;align-items:center;">
                 <input id="fValor" style="padding-right:34px;" ${multiCatMode?'readonly':''}>
-                ${!multiCatMode ? `<button type="button" class="icon-btn" id="btnCalc" style="position:absolute;right:2px;color:var(--gray-400);" title="Calculadora">${ICONS.calc}</button>` : ""}
+                ${!multiCatMode ? `<button type="button" class="icon-btn" id="btnCalc" style="position:absolute;right:2px;color:var(--ink-soft);" title="Calculadora">${ICONS.calc}</button>` : ""}
               </div>
               ${!multiCatMode && form.recorrencia.ativa && form.recorrencia.tipo==="parcelado" && form.recorrencia.valorTipo==="parcela" && form.recorrencia.totalParcelas>1 ? `<div class="mini-note" style="margin-top:2px;font-weight:600;">Total: ${fmtMoney((form.valor||0)*form.recorrencia.totalParcelas)}</div>` : (multiCatMode ? `<div class="mini-note" style="margin-top:2px;font-weight:600;">Soma das categorias</div>` : "")}
             </label>
@@ -4937,7 +4992,7 @@ function renderCartoes(root){
         const bandeiraIcon = CATEGORY_ICON_SVGS[`bandeira${bandeiraKey.charAt(0).toUpperCase()}${bandeiraKey.slice(1)}Mono`] || CATEGORY_ICON_SVGS.bandeiraOutrosMono;
         const digitos = (c.ultimosDigitos && c.ultimosDigitos.length===4) ? c.ultimosDigitos : "0000";
         return `
-        <div class="card ${c.padrao?'ribbon-padrao':''}" style="cursor:pointer;display:flex;flex-direction:column;min-height:170px;background:${c.cor};color:${corTexto};padding:16px;border-radius:16px;" data-extrato-cartao="${c.id}">
+        <div class="card dash-cartao-mini ${c.padrao?'ribbon-padrao':''}" style="cursor:pointer;display:flex;flex-direction:column;min-height:170px;background:${c.cor};color:${corTexto};padding:16px;border-radius:16px;" data-extrato-cartao="${c.id}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
             <span style="width:30px;height:18px;display:inline-flex;align-items:center;color:${corTexto};">${bandeiraIcon}</span>
             <div style="display:flex;align-items:center;gap:4px;flex:none;" onclick="event.stopPropagation()">
@@ -5056,8 +5111,8 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
     overlay.innerHTML = `
       <div class="portal-modal wide">
         <div class="portal-head">
-          <h2 style="display:flex;align-items:center;gap:6px;"><strong>Fatura:</strong> <span style="display:flex;align-items:center;gap:3px;font-weight:400;">${entityCircleHtml(cartao.cor,cartao.icone)}${cartao.nome}</span>
-            <span class="badge-status ${statusClass}">${statusLabel}</span>
+          <h2 style="display:flex;align-items:center;gap:8px;line-height:1;"><strong>Fatura:</strong> <span style="display:flex;align-items:center;gap:5px;font-weight:400;line-height:1;">${entityCircleHtml(cartao.cor,cartao.icone)}${cartao.nome}</span>
+            <span class="badge-status ${statusClass}" style="flex:none;">${statusLabel}</span>
           </h2>
           <button class="close-x">&times;</button>
         </div>
@@ -5092,7 +5147,7 @@ function openExtratoFaturaModal(cartaoId, mesInicial){
           </div>
         </div>
         <div class="portal-foot">
-          <div>${itens.length && status!=='Paga' ? `<button class="btn primary" id="btnPagarFatura">Pagar Fatura</button>` : ""}
+          <div>${itens.length && status!=='Paga' ? `<button class="btn primary" id="btnPagarFatura"><span class="tt-icon" style="width:14px;height:14px;">${ICONS.check}</span> Pagar Fatura</button>` : ""}
           ${status==='Paga' ? `<button class="btn danger" id="btnReabrirFatura"><span class="tt-icon">${ICONS.repeat}</span> Reabrir a fatura</button>` : ""}</div>
           <button class="btn ghost" id="btnFechar">Fechar</button>
         </div>
@@ -5273,9 +5328,15 @@ function renderCategorias(root){
     <div class="view-header">
       ${pageTitleHtml("Categorias","Organização dos seus lançamentos")}
     </div>
-    <div class="tabs-card" style="justify-content:space-between;align-items:center;">
-      <div style="display:flex;">
-        ${tabs.map(t=>`<button class="tab-btn tab-${t.tipo} ${catTabTipo===t.tipo?'active':''}" data-tab="${t.tipo}"><span class="tt-icon">${ICONS[t.icon]}</span>${t.label}</button>`).join("")}
+    <div class="tabs-card" style="justify-content:space-between;align-items:center;background:none;border:none;padding:0;">
+      <div style="display:flex;gap:6px;background:var(--surface-2);border-radius:12px;padding:4px;">
+        ${tabs.map(t=>{
+          const cor = t.tipo==='entrada'?'var(--positive)':t.tipo==='despesa'?'var(--negative)':'var(--type-investimento)';
+          const ativo = catTabTipo===t.tipo;
+          return `<button class="orc-seg-btn" data-tab="${t.tipo}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;transition:.15s;background:${ativo?cor:'transparent'};color:${ativo?'#fff':'var(--ink-soft)'};">
+            <span class="tt-icon" style="width:15px;height:15px;">${ICONS[t.icon]}</span>${t.label}
+          </button>`;
+        }).join("")}
       </div>
       <button class="btn-create" id="btnNovaCat" style="margin-right:2px;"><span class="badge-plus">${ICONS.plus}</span> Categoria</button>
     </div>
@@ -5369,15 +5430,45 @@ function renderTags(root){
     </div>
     <div class="card">
       <div class="pill-select">
-        ${state.tags.length? state.tags.map(t=>`<span class="tag-token" data-edit-tag="${t.id}" style="cursor:pointer;">${t.nome} <span class="mini-note" style="margin:0;font-weight:600;">${usoTag(t.id)}</span> <span class="chip-x del-tag" data-id="${t.id}">&times;</span></span>`).join("") : ''}
+        ${state.tags.length? state.tags.map(t=>`<span class="tag-token" data-tag-row="${t.id}">
+          <span data-tag-nome="${t.id}" style="cursor:text;">${t.nome}</span>
+          <span class="mini-note" style="margin:0;font-weight:600;">${usoTag(t.id)}</span>
+          <span class="tt-icon chip-x del-tag" data-id="${t.id}" style="width:13px;height:13px;cursor:pointer;">${ICONS.trash}</span>
+        </span>`).join("") : ''}
       </div>
       ${!state.tags.length ? emptyState("Nenhuma tag cadastrada ainda.") : ""}
     </div>
   `;
   document.getElementById("btnNovaTag").onclick = ()=> openTagModal();
-  root.querySelectorAll("[data-edit-tag]").forEach(el=> el.addEventListener("click", (e)=>{
-    if(e.target.closest(".del-tag")) return;
-    openTagModal(el.dataset.editTag);
+  root.querySelectorAll("[data-tag-nome]").forEach(el=> el.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    const tagId = el.dataset.tagNome;
+    const tag = state.tags.find(t=>t.id===tagId);
+    if(!tag) return;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = tag.nome;
+    input.style.cssText = "font-size:inherit;font-family:inherit;border:1px solid var(--sidebar-accent);border-radius:6px;padding:2px 6px;width:110px;background:var(--surface);color:var(--ink);";
+    el.replaceWith(input);
+    input.focus();
+    input.selectionStart = input.selectionEnd = input.value.length;
+    let salvo = false;
+    const salvar = async ()=>{
+      if(salvo) return;
+      salvo = true;
+      const novoNome = input.value.trim();
+      if(novoNome && novoNome!==tag.nome){
+        tag.nome = novoNome;
+        await persist();
+        showToast("Tag atualizada.");
+      }
+      renderTags(root);
+    };
+    input.addEventListener("keydown", (ev)=>{
+      if(ev.key==="Enter"){ ev.preventDefault(); salvar(); }
+      else if(ev.key==="Escape"){ ev.preventDefault(); salvo=true; renderTags(root); }
+    });
+    input.addEventListener("blur", salvar);
   }));
   root.querySelectorAll(".del-tag").forEach(b=> b.onclick=async (e)=>{
     e.stopPropagation();
@@ -5762,7 +5853,7 @@ function openCategoriaModal(id, paiIdPreset, tipoPreset){
   const base = editing ? editingCat : {
     id:null, nome:"", tipo:tipoFinal, categoriaPaiId:paiIdPreset||null,
     cor: paiCat ? paiCat.cor : COLOR_PRESETS[Math.floor(Math.random()*COLOR_PRESETS.length)],
-    icone:isConta?"bank":"other"
+    icone:isConta?"bank":"other", ocultarGraficos:false
   };
   const tipoLabel = {despesa:"Despesa",entrada:"Entrada",investimento:"Investimento",conta:"Conta"}[tipoFinal]||"";
   const overlay = document.createElement("div");
@@ -5813,6 +5904,13 @@ function openCategoriaModal(id, paiIdPreset, tipoPreset){
               <button type="button" class="btn small" id="btnAddSub" style="flex:none;">Adicionar</button>
             </div>
           </div>` : ""}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+            <div>
+              <span style="font-size:12.5px;font-weight:600;color:var(--ink);">Ocultar dos gráficos do Dashboard</span>
+              <p class="mini-note" style="margin:2px 0 0;">A categoria continua sendo somada nos totais gerais, só não aparece nos gráficos (Top categorias, Variação).</p>
+            </div>
+            <span class="switch ${base.ocultarGraficos?'on':''}" id="switchOcultarGraficos" style="flex:none;"><span class="knob"></span></span>
+          </div>
         </div>
         <div class="portal-foot"><div></div>
           <div style="display:flex;gap:10px;"><button class="btn ghost" id="btnCancel">Cancelar</button><button class="btn primary" id="btnSave">Salvar</button></div>
@@ -5866,12 +5964,17 @@ function openCategoriaModal(id, paiIdPreset, tipoPreset){
       draw();
       renderView();
     });
+    const switchOcultarEl = overlay.querySelector("#switchOcultarGraficos");
+    if(switchOcultarEl) switchOcultarEl.onclick = ()=>{
+      base.ocultarGraficos = !base.ocultarGraficos;
+      switchOcultarEl.classList.toggle("on", base.ocultarGraficos);
+    };
     overlay.querySelector("#btnSave").onclick = async ()=>{
       const nome = overlay.querySelector("#fNome").value.trim();
       if(!nome){ showToast("Informe um nome."); return; }
       const paiId = effectivePaiId || null;
-      const data = { id:editing?id:uid("cat"), nome, tipo:tipoFinal, categoriaPaiId:paiId, cor: overlay.querySelector("#fCor").value, icone: overlay.querySelector("#fIcone").value||"" };
-      if(editing){ const idx=state.categorias.findIndex(c=>c.id===id); state.categorias[idx]=data; }
+      const data = { id:editing?id:uid("cat"), nome, tipo:tipoFinal, categoriaPaiId:paiId, cor: overlay.querySelector("#fCor").value, icone: overlay.querySelector("#fIcone").value||"", ocultarGraficos: !!base.ocultarGraficos };
+      if(editing){ const idx=state.categorias.findIndex(c=>c.id===id); state.categorias[idx]=Object.assign({}, state.categorias[idx], data); }
       else{
         state.categorias.push(data);
         if(!paiId && !isSingleLevel){
@@ -5963,9 +6066,15 @@ function renderOrcamento(root){
     <div class="view-header">
       ${pageTitleHtml("Orçamento","Planejamento por categoria")}
     </div>
-    <div class="tabs-card" style="justify-content:space-between;align-items:center;">
-      <div style="display:flex;">
-        ${tabs.map(t=>`<button class="tab-btn tab-${t.tipo} ${orcTabTipo===t.tipo?'active':''}" data-tab="${t.tipo}"><span class="tt-icon">${ICONS[t.icon]}</span>${t.label}</button>`).join("")}
+    <div class="tabs-card" style="justify-content:space-between;align-items:center;background:none;border:none;padding:0;">
+      <div style="display:flex;gap:6px;background:var(--surface-2);border-radius:12px;padding:4px;">
+        ${tabs.map(t=>{
+          const cor = t.tipo==='entrada'?'var(--positive)':t.tipo==='despesa'?'var(--negative)':'var(--type-investimento)';
+          const ativo = orcTabTipo===t.tipo;
+          return `<button class="orc-seg-btn" data-tab="${t.tipo}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;transition:.15s;background:${ativo?cor:'transparent'};color:${ativo?'#fff':'var(--ink-soft)'};">
+            <span class="tt-icon" style="width:15px;height:15px;">${ICONS[t.icon]}</span>${t.label}
+          </button>`;
+        }).join("")}
       </div>
       <button class="btn-create" id="btnNovoOrc" style="margin-right:2px;"><span class="badge-plus">${ICONS.plus}</span> Orçamento</button>
     </div>
@@ -6021,6 +6130,7 @@ async function excluirOrcamentoComEscopo(oid){
           <div style="display:flex;flex-direction:column;gap:8px;">
             <button type="button" class="btn ghost" style="justify-content:flex-start;" data-opt="mes">Somente o mês selecionado (${fmtMonthLabel(currentMonth)})</button>
             <button type="button" class="btn ghost" style="justify-content:flex-start;" data-opt="diante">Este e todos os meses seguintes</button>
+            <button type="button" class="btn ghost" style="justify-content:flex-start;" data-opt="tudo">Todos os meses (remover por completo)</button>
           </div>
         </div>
         <div class="portal-foot"><div></div><button class="btn ghost" id="btnCancelAsk">Cancelar</button></div>
@@ -6036,7 +6146,9 @@ async function excluirOrcamentoComEscopo(oid){
   const ok = await openConfirmPortal("Confirma a exclusão? Essa ação não pode ser desfeita.", {danger:true});
   if(!ok) return false;
   const mesKeyAtual = monthKey(currentMonth);
-  if(escolha==="mes"){
+  if(escolha==="tudo"){
+    state.orcamentos = state.orcamentos.filter(x=>x.id!==oid);
+  } else if(escolha==="mes"){
     const valorAntes = valorPlanejadoEfetivo(o, currentMonth);
     const proxMesKey = monthKey(new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 1));
     o.historicoValores = [...(o.historicoValores||[]), {desde:mesKeyAtual, valor:0}, {desde:proxMesKey, valor:valorAntes}];
@@ -6090,7 +6202,10 @@ function openOrcamentoModal(id, tipoOverride){
               ${customSelectHtml("fCat", catsOrcamento.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), selCategoriaId, "Selecionar categoria")}
             </label>
             <label class="field">Subcategoria
-              ${customSelectHtml("fSubcat", subcats.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), selSubcategoriaId, "Categoria inteira")}
+              <div style="position:relative;">
+                ${customSelectHtml("fSubcat", subcats.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), selSubcategoriaId, "Categoria inteira")}
+                ${selSubcategoriaId ? `<button type="button" id="btnLimparSubcatOrc" title="Remover subcategoria" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:none;background:var(--surface-2);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;font-size:12px;line-height:1;z-index:2;">&times;</button>` : ""}
+              </div>
             </label>
           </div>` : `<p class="mini-note" style="margin-bottom:12px;">Este é o valor que você planeja aportar em investimentos no mês — a categoria específica do ativo não importa aqui.</p>`}
           <div class="field-row">
@@ -6119,11 +6234,22 @@ function openOrcamentoModal(id, tipoOverride){
             const base6 = mesesComDados.length>0 ? mesesComDados : meses;
             const media = base6.reduce((s,m)=>s+m.valor,0) / base6.length;
             const corTipo = tipoAtivo==="entrada" ? "var(--type-entrada)" : tipoAtivo==="investimento" ? "var(--type-investimento)" : "var(--type-despesa)";
+            const metasPorMes = meses.map((m,i)=>{
+              const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-(5-i), 1);
+              const orcsDaCategoria = state.orcamentos.filter(o=>o.categoriaId===catParaHistorico.id);
+              if(!orcsDaCategoria.length) return null;
+              const total = orcsDaCategoria.reduce((s,o)=>s+valorPlanejadoEfetivo(o,d),0);
+              return total>0 ? total : null;
+            });
             return `
           <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
             <h4 style="margin:0 0 4px;font-size:13px;">Evolução mensal</h4>
-            <p class="mini-note" style="margin:0 0 12px;">Média dos últimos ${base6.length} mês(es) com dados: <strong style="color:var(--ink);">${fmtMoney(media)}</strong> <button type="button" class="btn ghost small" id="btnUsarMediaOrc" style="padding:2px 8px;margin-left:4px;color:var(--sidebar-accent);">Usar este valor</button></p>
-            ${historicoConsumoChartSvg(meses, 420, 110, corTipo)}
+            <p class="mini-note" style="margin:0 0 8px;">Média dos últimos ${base6.length} mês(es) com dados: <strong style="color:var(--ink);">${fmtMoney(media)}</strong> <button type="button" class="btn ghost small" id="btnUsarMediaOrc" style="padding:2px 8px;margin-left:4px;color:var(--positive);font-weight:700;">Usar este valor</button></p>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;font-size:10.5px;font-weight:600;color:var(--ink-soft);">
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:2px;background:${corTipo};display:inline-block;"></span>Consumo</span>
+              ${metasPorMes.some(v=>v!=null) ? `<span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:0;border-top:2px dashed var(--gray-400);display:inline-block;"></span>Meta definida</span>` : ""}
+            </div>
+            ${historicoConsumoChartSvg(meses, 420, 110, corTipo, metasPorMes)}
           </div>`;
           })() : ""}
         </div>
@@ -6133,7 +6259,7 @@ function openOrcamentoModal(id, tipoOverride){
         </div>
       </div>`;
     document.body.appendChild(overlay);
-    maskMoney(overlay.querySelector("#fValor"), base.valorPlanejado);
+    maskMoney(overlay.querySelector("#fValor"), valorPlanejadoEfetivo(base, currentMonth));
     const btnUsarMediaOrc = overlay.querySelector("#btnUsarMediaOrc");
     if(btnUsarMediaOrc) btnUsarMediaOrc.onclick = ()=>{
       const catParaHistorico = isInvestimento ? {id:selCategoriaId} : (selSubcategoriaId ? categoriaById(selSubcategoriaId) : categoriaById(selCategoriaId));
@@ -6151,6 +6277,8 @@ function openOrcamentoModal(id, tipoOverride){
     if(!isInvestimento){
       wireCustomSelect(overlay, "fCat", catsOrcamento.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), (v)=>{ selCategoriaId=v; selSubcategoriaId=null; draw(); });
       wireCustomSelect(overlay, "fSubcat", subcats.map(c=>({id:c.id,label:c.nome,color:c.cor,iconHtml:catCircleHtml(c)})), (v)=>{ selSubcategoriaId=v||null; draw(); });
+      const btnLimparSubcatOrc = overlay.querySelector("#btnLimparSubcatOrc");
+      if(btnLimparSubcatOrc) btnLimparSubcatOrc.onclick = (e)=>{ e.stopPropagation(); selSubcategoriaId=null; draw(); };
     }
     overlay.querySelector(".close-x").onclick=()=>overlay.remove();
     overlay.querySelector("#btnCancel").onclick=()=>overlay.remove();
@@ -6164,6 +6292,7 @@ function openOrcamentoModal(id, tipoOverride){
       const validoApartirDeVal = (overlay.querySelector("#fValidoAPartir").value||monthKey(currentMonth))+"-01";
       const valorPlanejadoVal = moneyVal(overlay.querySelector("#fValor"));
       let historicoValoresVal = base.historicoValores || [];
+      let valorPlanejadoTopoVal = valorPlanejadoVal;
       if(editing){
         const valorEfetivoAtual = valorPlanejadoEfetivo(base, currentMonth);
         if(valorPlanejadoVal !== valorEfetivoAtual){
@@ -6196,6 +6325,8 @@ function openOrcamentoModal(id, tipoOverride){
           if(escolha==="mes"){
             historicoValoresVal.push({desde:proxMesKey, valor:valorEfetivoAtual});
           }
+          // Preserva o valor original como fallback para meses anteriores ao primeiro registro do histórico
+          valorPlanejadoTopoVal = base.valorPlanejado;
         }
       }
       const data = {
@@ -6203,7 +6334,7 @@ function openOrcamentoModal(id, tipoOverride){
         categoriaId: selSubcategoriaId || selCategoriaId,
         mesReferencia: null,
         validoApartirDe: validoApartirDeVal,
-        valorPlanejado: valorPlanejadoVal,
+        valorPlanejado: valorPlanejadoTopoVal,
         historicoValores: historicoValoresVal
       };
       if(editing){ const idx=state.orcamentos.findIndex(o=>o.id===id); state.orcamentos[idx]=data; }
@@ -7022,7 +7153,7 @@ function openSobreModal(){
       <div class="portal-body">
         <p style="margin-bottom:10px;"><strong>Dolfin</strong> — Controle Financeiro Pessoal</p>
         <p class="mini-note" style="margin-bottom:10px;">Aplicativo único (HTML/CSS/JS), sem servidor, com dados salvos diretamente no seu computador via File System Access API. Parte da família de ferramentas TYVRA.</p>
-        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.8.161</p>
+        <p class="mini-note" style="margin-bottom:4px;">Versão: 1.9.053</p>
         <p class="mini-note">Navegador recomendado: Chrome ou Edge.</p>
       </div>
       <div class="portal-foot"><div></div><button class="btn ghost" id="btnFecharSobre">Fechar</button></div>
@@ -7329,6 +7460,7 @@ function aplicarTema(){
 async function alternarTema(){
   state.configuracoes.temaEscuro = !state.configuracoes.temaEscuro;
   aplicarTema();
+  renderView();
   await persist();
 }
 function bootApp(){
@@ -7372,6 +7504,7 @@ document.getElementById("btnSidebarCollapse").addEventListener("click", async ()
   sidebarColapsada = !sidebarColapsada;
   aplicarSidebarCollapse();
   state.configuracoes.sidebarColapsada = sidebarColapsada;
+  renderView();
   await persist();
 });
 aplicarSidebarCollapse();
